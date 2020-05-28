@@ -1,36 +1,6 @@
 // Генератор файловой структуры
 // Описать конфигурацию файловой структуры БЭМ в файле bem.json. В терминале, из корневой папки проекта, выполнить node .\createbem.js
 
-// Пример конфигурации:
-/* {
-	"blockname1": {
-		"mods": "modifier1, modifier2",
-		"elems": [{
-				"elem": "elemname1",
-				"mods": "modifier1"
-			},
-			{
-				"elem": "elemname2",
-				"mods": "modifier1"
-			}
-		]
-	},
-	"blockname2": {
-		"mods": "modifier1, modifier2",
-		"elems": [{
-				"elem": "elemname1",
-				"mods": "modifier1, modifier2"
-			},
-			{
-				"elem": "elemname2",
-				"mods": "modifier1, modifier2"
-			}
-		],
-		"js": true
-	}
-} */
-
-
 const fs = require('fs');
 const mkdirp = require('mkdirp2');
 const config = require('./bem.json');

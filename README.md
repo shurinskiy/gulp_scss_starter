@@ -5,7 +5,7 @@
 Можно работать!
 
 - Создать БЭМ файловую структуру в папке blocks:
-Вначале, надо описать файловую структуру в корне проекта, в файле bem.json (пример есть внутри createbem.js). После этого в консоли запустить сам скрипт:
+Вначале, надо описать файловую структуру в корне проекта, в файле bem.json. После этого в консоли запустить сам скрипт:
 ### node .\createbem.js
 
 - Запустить проект в режиме разработки:
@@ -54,47 +54,3 @@
 
 - $ git config --global core.autocrlf false
 - $ git config --global core.safecrlf false
-
-## Авторизация на сервере через ssh по открытому ключу
-Вначале нужно запустить на Windows подсистему Linux. После этого появится доступ к консоли bash, все в дальнейшем делается через нее (это важно!). Команда ~/ означает корневую директорию, перейти в корень cd ~
-
-- Меню пуск => Параметры => Обновление и безопасность => Для разрабочиков => Режим разработчика
-- Меню пуск => Параметры => Приложения => Программы и компоненты => Включение или отключение компонентов Windows => Подсистема Windows для Linux => Перезагрузка
-
-Запускаем PowerShell от имени Администратора (актуальную версию node.js посмотреть на офф. сайте)
-- > Enable-WindowsOptionalFeature -Online -FeatureName Microsoft-Windows-Subsystem-Linux
-- > cd ~
-- > curl -sL https://deb.nodesource.com/setup_10.x -o nodesource_setup.sh
-- > sudo bash nodesource_setup.sh
-- > sudo apt-get install nodejs
-- bash
-- $ mkdir -p ~/.ssh
-- $ chmod 700 ~/.ssh
-- $ cd ~/.ssh
-- $ ssh-keygen
-В папке .ssh создаются два ключа id_rsa и id_rsa.pub. Ключ id_rsa.pub копирую на сервер, просто в корень. Дальше работаем на сервере через ssh консоль.
-- $ scp -p id_rsa.pub sshusername@yousite.com:~
-- $ ssh sshusername@yousite.com
-- $ mkdir -p ~/.ssh
-- $ chmod 700 ~/.ssh
-- $ cat id_rsa.pub >> ~/.ssh/authorized_keys
-- $ chmod 0400 ~/.ssh/authorized_keys
-- $ rm -f ~/id_rsa.pub
-- $ logout
-Опять на своем компьютере.
-- $ ssh-add
-Если не сработало, значит не запущен ssh агент. Надо его запустить:
-- $ eval `ssh-agent -s`
-- ssh-add
-После этого надо попробовать снова подключиться к серверу через ssh, если все нормально, то сервер больше не будет спрашивать пароль.
-- $ ssh sshusername@yousite.com
-
-P.S.
-Если во время "$ ssh-add /mnt/d/someproject/.ssh/id_rsa" появляется ошибка связанная с разрешением файла, то надо:
-1. выйти в корень внутри bash $ cd .. 
-2. размонтировать текущий диск $ sudo umount /mnt/d
-3. смонтировать его с ключами $ sudo mount -t drvfs D: /mnt/d -o metadata
-4. проверить появился ли у него при $ mount -l ключ "metadata"
-5. выставить публичному ключу разрешения "только для чтения" $ sudo chmod 0400 /mnt/d/someproject/.ssh/id_rsa
-6. повторить $ ssh-add /mnt/d/someproject/.ssh/id_rsa
-
