@@ -46,6 +46,7 @@
 - $ git branch -d <branch name> 
 - $ git merge <another branch name> 
 - $ git push -u origin master
+- $ git clone https://github.com/somename/someproject.git ./
 
 
 
