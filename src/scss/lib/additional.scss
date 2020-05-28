@@ -1,0 +1,52 @@
+$basesize: 16; 
+$image_path: "images/"; 
+  	
+/*подключить шрифт*/ 
+@mixin font-face($file, $family, $folder: "fonts/") { 
+	@font-face { 
+		font-family: $family; 
+		src: url("#{$folder}#{$file}/#{$file}.eot?#iefix") format('embedded-opentype'), 
+			url("#{$folder}#{$file}/#{$file}.woff") format('woff'), 
+			url("#{$folder}#{$file}/#{$file}.ttf")  format('truetype'), 
+			url("#{$folder}#{$file}.svg##{$file}") format('svg'); 
+		font-weight: normal; 
+		font-style: normal; 
+	} 
+} 
+  	
+/*вставить символ псевдографики*/ 
+@mixin inssymbol( $font,$symbol: '\0000',$pseudo: "after") { 
+	&:#{$pseudo} { 
+		content: "#{$symbol}"; 
+		font-family: $font; 
+		vertical-align: middle; 
+		@content; 
+	} 
+} 
+  	
+/*заполнить родительский блок*/ 
+@mixin fill($spacing: 0, $index: 0) { 
+	position: absolute; 
+	display: block; 
+	box-sizing: border-box; 
+	top: $spacing; bottom: $spacing; 
+	left: $spacing; right: $spacing; 
+	z-index: $index; 
+} 
+  	
+/*сохранять пропрорции*/ 
+@mixin aspect-ratio($w, $h) { 
+	display: block; 
+	position: relative; 
+	$ratio: ($h / $w); 
+	&:before { 
+		content: ''; 
+		display: block; 
+		padding-top: (100% * $ratio); 
+	} 
+	> * { @include fill(); } 
+} 
+  	
+@mixin outline() { 
+	outline: 1px dotted grey; 
+} 
