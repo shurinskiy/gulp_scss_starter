@@ -1,13 +1,11 @@
 # Команды для работы
-> Вначале, проверяю файл package.json - добавляю или убираю ненужные для проекта зависимости. Затем, в этой же папке, с шифтом вызываю контекстное меню и запускаю командную строку.
+> Клонировать в текущую папку репозиторий с шаблоном:
+
+`git clone https://github.com/shurinskiy/gulp_scss_starter.git ./`
+
+> Проверяю файл package.json - добавляю или убираю ненужные для проекта зависимости. Затем, в этой же папке, с шифтом вызываю контекстное меню и запускаю командную строку.
 
 `npm i`
-> Можно работать!
-
-## Создать БЭМ файловую структуру в папке blocks:
-> Вначале, надо описать файловую структуру в корне проекта, в файле bem.json. После этого в консоли запустить сам скрипт:
-
-`node .\createbem.js`
 
 > Запустить проект в режиме разработки:
 
@@ -17,6 +15,12 @@
 
 `npm run build`
 
+> Остальные команды смотреть в файле package.json
+
+## Создать БЭМ файловую структуру в папке blocks:
+> Вначале, надо описать файловую структуру в корне проекта, в файле bem.json. После этого в консоли запустить сам скрипт:
+
+`node .\createbem.js`
 
 ## Команды npm:
 - node -h — показывает список всех доступных команд Node.js
@@ -39,14 +43,15 @@
 
 ## Команды git:
 - $ git init 
-- $ git add <!-- добавить в кэш -->
+- $ git add <file name>
 - $ git status
 - $ git log
 - $ git commit -m <commit name>
 - $ git branch <new branch name> 
-- $ git checkout -b <new branch name> 
-- $ git checkout <branch name> 
 - $ git branch -d <branch name> 
+- $ git checkout <branch name> 
+- $ git checkout -b <new branch name> 
+- $ git reset -- <file name> 
 - $ git merge <another branch name> 
 - $ git push -u origin master
 - $ git clone https://github.com/somename/someproject.git ./
