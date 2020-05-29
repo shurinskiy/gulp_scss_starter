@@ -51,13 +51,15 @@
 
 ## Альясы для git
 В файле .gitconfig добавить секцию [alias] со следующим содержимым:
--	s = status --short
--	st = status
--	l = log --oneline --graph --decorate --all
--	g = log --graph --abbrev-commit --decorate --all --format=format:'%C(bold blue)%h%C(reset) - %C(bold cyan)%aD%C(dim white) - %an%C(reset) %C(bold green)(%ar)%C(reset)%C(bold yellow)%d%C(reset)%n %C(white)%s%C(reset)'
--	br = branch
--	co = checkout
--   cm = commit -am
+
+>	s = status --short
+>	st = status
+>	l = log --oneline --graph --decorate --all
+>	g = log --graph --abbrev-commit --decorate --all --format=format:'%C(bold blue)%h%C(reset) - %C(bold cyan)%aD%C(dim white) - %an%C(reset) %C(bold green)(%ar)%C(reset)%C(bold yellow)%d%C(reset)%n %C(white)%s%C(reset)'
+>	br = branch
+>	co = checkout
+>   cm = commit -am
+
 Это позволит вместо полной записи команд в консоли, использовать короткие альясы - git st
 
 - Если git ругается на неправильный формат переносов (fatal: LF would be replaced by CRLF in), то либо привести все файлы к одной кодировке для текущей операционной системы, либо отключить настройку проверки переносов:
