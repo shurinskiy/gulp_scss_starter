@@ -42,24 +42,26 @@
 
 
 ## Команды git:
-- $ git init 
-- $ git add <file name>
-- $ git status
-- $ git log
-- $ git commit -m <commit name>
-- $ git branch <new branch name> 
-- $ git branch -d <branch name> 
-- $ git checkout <branch name> 
-- $ git checkout -b <new branch name> 
-- $ git reset -- <file name> 
-- $ git merge <another branch name> 
-- $ git push -u origin master
-- $ git clone https://github.com/somename/someproject.git ./
+- `git init` - инициализация git в локальной папке
+- `git add` - скопировать файлы в их текущем состоянии в предкоммитный индекс
+- `git status` - информация о состоянии файлов в локальном репозитории
+- `git diff` - посмотреть разницу между файлами в индексе и в рабочем каталоге
+- `git diff --staged` - посмотреть разницу между последним коммитом и индексом
+- `git log` - вывод истории коммитов
+- `git commit -m` - сохранить снимок индекса в виде коммита
+- `git branch` - создать ветку
+- `git branch -d` - удалить ветку
+- `git checkout` - копирование файлов из коммита или индекса в рабочую директорию, переключение между ветками
+- `git checkout -b` - создать ветку и сразу на нее переключиться
+- `git reset` - отменить индексирование
+- `git merge` - слияние коммитов
+- `git push -u origin master` - отправка данных на удаленный репозиторий
+- `git clone https://github.com/somename/someproject.git ./` - копирование удаленного репозитория в локальный каталог
 
 > Если git ругается на неправильный формат переносов (fatal: LF would be replaced by CRLF in), то либо привести все файлы к одной кодировке для текущей операционной системы, либо отключить настройку проверки переносов:
 
-- $ git config --global core.autocrlf false
-- $ git config --global core.safecrlf false
+- `git config --global core.autocrlf false`
+- `git config --global core.safecrlf false`
 
 
 ## Альясы для git
