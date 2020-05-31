@@ -21,7 +21,7 @@ for (const blockName in config) {
 
 	}
 
-	if (block.elems.constructor === Array) {
+	if (Array.isArray(block.elems)) {
 		block.elems.forEach(elements => {
 
 			fileContent += `\t&__${elements.elem} {\n`;
