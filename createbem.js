@@ -21,13 +21,15 @@ for (const blockName in config) {
 
 	}
 
-	if (block.elems.constructor === Array) {
+	if (Array.isArray(block.elems)) {
 		block.elems.forEach(elements => {
 
 			fileContent += `\t&__${elements.elem} {\n`;
 			if (elements.mods) {
 				let modfiers = elements.mods.split(",")
 				modfiers.forEach((modifier) => fileContent += `\t\t&_${modifier.trim()} {\n\t\t\t\n\t\t}\n`);
+			} else {
+				fileContent += `\n`;
 			}
 			fileContent += `\t}\n`;
 		});
