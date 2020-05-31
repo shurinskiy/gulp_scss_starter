@@ -168,32 +168,8 @@ function watch() {
 	gulp.watch(pth.wtch.fnts, fonts);
 }
 
-let gridOptions = {
-	outputStyle: 'scss',
-	columns: 24,
-	offset: "40px",  // gutter width px || %
-	container: {
-		maxWidth: '1400px',  // max-width оn very large screen
-		fields: '20px'  // side fields
-	},
-	breakPoints: {
-		xxxxlg: { 'width': '1920px' },
-		xxxlg: { 'width': '1680px' },
-		xxlg: { 'width': '1440px' },
-		xlg: { 'width': '1280px' },
-		lg: { 'width': '1100px' },
-		md: { 'width': '960px' },
-		sm: { 'width': '780px' },
-		xs: { 'width': '640px' },
-		xxs: { 'width': "480px" },
-		xxxs: { 'width': "360px"}
-	},
-	'properties': [],
-	'oldSizeStyle': false
-};
-
 function grid(done) {
-	$.smartGrid('./src/scss/lib', gridOptions);
+	$.smartGrid('./src/scss/lib', pckg.smartgrid);
 	done();
 }
 
