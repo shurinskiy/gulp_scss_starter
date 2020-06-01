@@ -32,12 +32,12 @@ let webconf = {
 
 let pth = {
 	pbl: {
-		root: './public/',
-		html: './public/',
-		js: './public/',
-		css: './public/',
-		img: './public/images/',
-		fnts: './public/fonts/'
+		root: './docs/',
+		html: './docs/',
+		js: './docs/',
+		css: './docs/',
+		img: './docs/images/',
+		fnts: './docs/fonts/'
 	},
 	src: {
 		root: './src/',
@@ -102,7 +102,7 @@ function styles() {
 		.pipe($.sassGlob())
 		.pipe($.sass())
 		.on('error', swallowError)
-		.pipe($.autoprefixer({ browserslist: ["defaults"] }))
+		.pipe($.autoprefixer({ cascade: false }))
 		.pipe($.if(isProd, $.cleanCss({ level: 2 })))
 		.pipe($.if(isDev, $.sourcemaps.write()))
 		.pipe(gulp.dest(pth.pbl.css))
