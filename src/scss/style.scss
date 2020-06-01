@@ -2,4 +2,29 @@
 @import "lib/smart-grid.scss"; 
 @include reset(); 
 
+// @include font-face("Roboto-Black", "RBBL");
+
 @import "../blocks/**/*.scss";
+
+
+body, html {
+	font-size: #{$basesize}px;
+	line-height: calc(#{$basesize}px * 1.4);
+	@include xxs-block() {
+		font-size: calc(#{$basesize}px * 0.85);
+		line-height: calc(#{$basesize}px * 1.2);
+	}
+	font-family: "RBL", sans-serif;
+	background-color: #fafafa;
+	min-height: 100vh;
+	display: flex;
+	flex-flow: column nowrap;
+}
+.main { flex: 1 0 auto; }
+.footer { flex: 0 0 auto; }
+
+
+p { margin-bottom: 10px; }
+strong { font-weight: bold; }
+em { font-style: italic; }
+.clear { clear: both; }

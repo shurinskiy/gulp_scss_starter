@@ -1,4 +1,7 @@
 {
+	"header": {},
+	"main": {},
+	"footer": {},
 	"blockname1": {
 		"mods": "modifier1, modifier2",
 		"elems": [{

@@ -74,6 +74,7 @@
 *	br = branch
 *	ch = checkout
 *   cm = commit -am
+*   psh = !git push --set-upstream origin $(git rev-parse --abbrev-ref HEAD)
 
 > Это позволит вместо полной записи команд в консоли, использовать короткие альясы - git st
 
