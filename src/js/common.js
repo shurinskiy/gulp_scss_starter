@@ -1,8 +1,3 @@
-import jQuery from "jquery"; 
-if (typeof jQuery !== "undefined") { 
-	(function($, undefined) { 
-		$(function() { 
- 			
-		}); 
-	})(jQuery); 
-} 
+// import "../blocks/someblock/someblock.js";
+// import "../blocks/someblock2/someblock2.js";
+
