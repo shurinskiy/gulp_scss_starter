@@ -36,7 +36,7 @@ for (const blockName in config) {
 	}
 
 	if (block.js) {
-		createFile(`${dirPath}${blockName}.js`, `// (function(){\n// код\n// }());\n`);
+		createFile(`${dirPath}${blockName}.js`, `// (() => {\n// код\n// })();\n`);
 	}
 	fileContent += `}\n`;
 
