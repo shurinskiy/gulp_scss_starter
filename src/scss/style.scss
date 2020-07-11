@@ -6,6 +6,7 @@
 
 @import "../blocks/**/*.scss";
 
+body { @include screen-media(); }
 
 body, html {
 	font-size: #{$basesize}px;
