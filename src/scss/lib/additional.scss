@@ -131,7 +131,7 @@ $image_path: "images/";
 			content: "";
 			display: block;
 			text-align: center;
-			position: absolute;
+			position: fixed;
 			top: 5px; right: 5px;
 			z-index: 9999;
 			min-height: 16px;
