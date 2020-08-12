@@ -1,9 +1,9 @@
 {
-	"name": "20192303",
-	"version": "1.0.0",
+	"name": "gulp-scss-starter",
+	"version": "1.0.2",
 	"scripts": {
 		"postinstall": "npm run grid",
-		"createbem": "node .\\createbem.js",
+		"bem": "bemtree-from-html",
 		"start": "gulp watch --dev --sync",
 		"remote": "gulp watch --remote",
 		"build": "gulp build",
@@ -13,13 +13,18 @@
 		"stylelint": "stylelint './src/blocks/**/*.scss' --syntax scss",
 		"stylefix": "stylelint './src/blocks/**/*.scss' --syntax scss --fix"
 	},
-	"keywords": [],
-	"author": "me",
-	"license": "ISC",
+	"keywords": ["bem","html","scss","gulp"],
+	"author": "Alexandr Tumanov <shurinskiy2@gmail.com>",
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/shurinskiy/gulp_scss_starter"
+	},
+		"license": "ISC",
 	"devDependencies": {
 		"@babel/core": "^7.10.4",
 		"@babel/preset-env": "^7.10.4",
 		"babel-loader": "^8.0.5",
+		"bemtree-from-html": "^1.0.2",
 		"browser-sync": "^2.26.5",
 		"del": "^5.1.0",
 		"fancy-log": "^1.3.3",
@@ -27,6 +32,7 @@
 		"gulp-autoprefixer": "^7.0.1",
 		"gulp-clean-css": "^4.2.0",
 		"gulp-file-include": "^2.0.1",
+		"gulp-fonter": "^0.3.0",
 		"gulp-if": "^3.0.0",
 		"gulp-lipsum-vars": "0.0.3",
 		"gulp-load-plugins": "^2.0.3",
@@ -79,7 +85,7 @@
 			"sm": { "width": "780px" },
 			"xs": { "width": "640px" },
 			"xxs": { "width": "480px" },
-			"xxxs": { "width": "360px"}
+			"xxxs": { "width": "360px" }
 		},
 		"properties": [],
 		"oldSizeStyle": false

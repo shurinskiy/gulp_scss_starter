@@ -65,7 +65,7 @@
 
 
 ## Альясы для git
-> В файле .gitconfig добавить секцию [alias] со следующим содержимым:
+> В файле C:\Users\Username\.gitconfig добавить секцию [alias] со следующим содержимым:
 
 *	s = status --short
 *	st = status

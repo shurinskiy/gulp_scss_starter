@@ -31,10 +31,9 @@ $image_path: "images/";
 @mixin font-face($file, $family, $folder: "fonts/") { 
 	@font-face { 
 		font-family: $family; 
-		src: url("#{$folder}#{$file}/#{$file}.eot?#iefix") format('embedded-opentype'), 
-			url("#{$folder}#{$file}/#{$file}.woff") format('woff'), 
-			url("#{$folder}#{$file}/#{$file}.ttf")  format('truetype'), 
-			url("#{$folder}#{$file}.svg##{$file}") format('svg'); 
+		src: url("#{$folder}#{$file}.eot?#iefix") format('embedded-opentype'), 
+			url("#{$folder}#{$file}.woff") format('woff'), 
+			url("#{$folder}#{$file}.ttf")  format('truetype'); 
 		font-weight: normal; 
 		font-style: normal; 
 	} 

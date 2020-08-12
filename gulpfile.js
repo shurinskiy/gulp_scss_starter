@@ -1,6 +1,5 @@
 const webpack = require('webpack');
 let gulp = require('gulp');
-let fs = require('fs');
 let $ = require('gulp-load-plugins')({ pattern: '*' });
 const isRemote = process.argv.indexOf('--remote') !== -1;
 const isSync = process.argv.indexOf('--sync') !== -1;
@@ -43,7 +42,7 @@ let pth = {
 		root: './src/',
 		html: './src/[^_]*.html', // src/*.html - взять все файлы с расширением кроме _
 		js: './src/js/common.js',
-		jslib: './src/js/[^common]*.js',
+		jslib: './src/js/!(common)*.js',
 		css: './src/scss/style.scss',
 		scss: './src/scss/lib/',
 		img: ['./src/images/**','!./src/images/**/*.psd'],
@@ -125,6 +124,9 @@ function images() {
 function fonts() {
 	return $.del([pth.pbl.fnts+'*']).then(function(paths) {
 		gulp.src(pth.src.fnts)
+		.pipe($.fonter({
+			formats: ['woff', 'ttf', 'eot']
+		  }))		
 		.pipe(gulp.dest(pth.pbl.fnts))
 		.pipe($.if(isSync, $.browserSync.stream()));
 		console.log('Deleted files and folders:\n', paths.join('\n'));
