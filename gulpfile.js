@@ -45,7 +45,7 @@ let pth = {
 		jslib: './src/js/!(common)*.js',
 		css: './src/scss/style.scss',
 		scss: './src/scss/lib/',
-		img: ['./src/images/**','!./src/images/**/icon-*.svg','!./src/images/**/shape-*.svg'],
+		img: './src/images/**/!(icon-*.svg|shape-*.svg)',
 		shp: './src/images/**/shape-*.svg',
 		icn: './src/images/**/icon-*.svg',
 		fnts: './src/fonts/**/*.*',
@@ -55,7 +55,7 @@ let pth = {
 		html: './src/**/*.html',
 		js: ['./src/js/**/*.js','./src/blocks/**/*.js'],
 		css: ['./src/scss/**/*.scss','./src/blocks/**/*.scss'],
-		img: ['./src/images/**','!./src/images/**/icon-*.svg','!./src/images/**/shape-*.svg'],
+		img: './src/images/**/!(icon-*.svg|shape-*.svg)',
 		shp: './src/images/**/shape-*.svg',
 		icn: './src/images/**/icon-*.svg',
 		fnts: './src/fonts/**/*.*'
