@@ -1,9 +1,9 @@
 {
 	"name": "gulp-scss-starter",
-	"version": "1.0.2",
+	"version": "1.0.3",
 	"scripts": {
 		"postinstall": "npm run grid",
-		"bem": "bemtree-from-html omit=@@",
+		"bem": "bemtree-from-html",
 		"start": "gulp watch --dev --sync",
 		"remote": "gulp watch --remote",
 		"build": "gulp build",
@@ -24,10 +24,10 @@
 	},
 	"license": "ISC",
 	"devDependencies": {
-		"@babel/core": "^7.10.4",
-		"@babel/preset-env": "^7.10.4",
+		"@babel/core": "^7.11.6",
+		"@babel/preset-env": "^7.11.5",
 		"babel-loader": "^8.0.5",
-		"bemtree-from-html": "^1.0.4",
+		"bemtree-from-html": "^1.0.5",
 		"browser-sync": "^2.26.5",
 		"del": "^5.1.0",
 		"fancy-log": "^1.3.3",
@@ -38,11 +38,12 @@
 		"gulp-fonter": "^0.3.0",
 		"gulp-if": "^3.0.0",
 		"gulp-lipsum-vars": "0.0.3",
-		"gulp-load-plugins": "^2.0.3",
+		"gulp-load-plugins": "^2.0.5",
 		"gulp-rsync": "0.0.9",
 		"gulp-sass": "^4.0.2",
 		"gulp-sass-glob": "^1.1.0",
 		"gulp-sourcemaps": "^2.6.5",
+		"gulp-svg-symbol-view": "^1.0.0",
 		"mkdirp2": "^1.0.4",
 		"vinyl-ftp": "^0.6.1",
 		"webpack-stream": "^5.2.1"
@@ -54,10 +55,6 @@
 		"owl.carousel": "^2.3.4",
 		"smart-grid": "^2.1.2"
 	},
-	"stylelint": {
-		"plugins": "stylelint-scss",
-		"extends": "stylelint-config-recommended-scss"
-	},
 	"externalJs": {
 		"jquery": "dist/jquery.min.js"
 	},
@@ -66,6 +63,11 @@
 		"user": "",
 		"password": "",
 		"workdir": ""
+	},
+	"bemtree": {
+		"from": "./src/**/!(_|temp)*.html",
+		"to": "src/blocks",
+		"omit": "@@,js-,active,col,row"
 	},
 	"smartgrid": {
 		"outputStyle": "scss",
