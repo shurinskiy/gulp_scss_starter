@@ -190,8 +190,8 @@ function watch() {
 	gulp.watch(pth.wtch.html, html);
 	gulp.watch(pth.wtch.css, styles);
 	gulp.watch(pth.wtch.img, images);
-	gulp.watch(pth.wtch.shp, shapes);
 	gulp.watch(pth.wtch.icn, icons);
+	gulp.watch(pth.wtch.shp, shapes);
 	gulp.watch(pth.wtch.fnts, fonts);
 }
 
@@ -200,7 +200,7 @@ function grid(done) {
 	done();
 }
 
-const build = gulp.series(clear, gulp.parallel(html, js, jslib, styles, images, shapes, icons, fonts));
+const build = gulp.series(clear, gulp.parallel(html, js, jslib, styles, images, icons, shapes, fonts));
 
 exports.build = build;
 exports.watch = gulp.series(build, watch);

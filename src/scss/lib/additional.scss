@@ -131,14 +131,14 @@ $images-path: "images/";
 			display: block;
 			text-align: center;
 			position: fixed;
-			top: 5px; right: 5px;
+			top: 30px; right: 5px;
 			z-index: 9999;
 			min-height: 16px;
 			min-width: 40px;
 			padding: 0 10px;
 			font: 12px/16px Arial, sans-serif;
 			color: $color;
-			background-color: rgba(255, 255, 0, 0.3);
+			background-color: #ffffd3;
 			border: 1px solid #bbb;
 		}
 		@each $var, $size in $breakpoints {

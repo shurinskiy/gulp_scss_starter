@@ -43,7 +43,7 @@
 		"gulp-sass": "^4.0.2",
 		"gulp-sass-glob": "^1.1.0",
 		"gulp-sourcemaps": "^2.6.5",
-		"gulp-svg-symbol-view": "^1.0.0",
+		"gulp-svg-symbol-view": "^1.0.1",
 		"mkdirp2": "^1.0.4",
 		"vinyl-ftp": "^0.6.1",
 		"webpack-stream": "^5.2.1"
