@@ -49,7 +49,7 @@ let pth = {
 		shp: './src/images/**/shape-*.svg',
 		icn: './src/images/**/icon-*.svg',
 		fnts: './src/fonts/**/*.*',
-		tmp: './src/tmp/'
+		tmpl: './src/templates/'
 	},
 	wtch: {
 		html: './src/**/*.html',
@@ -93,7 +93,7 @@ function jslib () {
 
 function html() {
 	return gulp.src(pth.src.html)
-		.pipe($.fileInclude({ prefix: '@@', basepath: '@file' }))
+		.pipe($.fileInclude({ prefix: '@@', basepath: pth.src.tmpl }))
 		.pipe($.lipsumVars())
 		.on('error', swallowError)
 		.pipe(gulp.dest(pth.pbl.html))
