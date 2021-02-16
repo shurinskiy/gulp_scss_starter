@@ -1,9 +1,44 @@
 @import "lib/additional.scss"; 
-@import "lib/smart-grid.scss"; 
 @include reset(); 
+
+@import "../../node_modules/include-media/dist/_include-media.scss";
+
+$breakpoints: (
+	'xxxs': 360px,
+	'xxs': 480px,
+	'xs': 640px,
+	'sm': 780px,
+	'md': 960px,
+	'lg': 1100px,
+	'xlg': 1280px,
+	'xxlg': 1440px,
+	'xxxlg': 1680px,
+	'xxxxlg': 1920px
+);
+
+// Import animate-scss
+@import
+	"../../node_modules/animate-scss/properties",
+	// "../../node_modules/animate-scss/_attention-seekers/attention-seekers.scss",
+	// "../../node_modules/animate-scss/_bouncing-entrances/bouncing-entrances.scss",
+	// "../../node_modules/animate-scss/_bouncing-exits/bouncing-exits.scss",
+	// "../../node_modules/animate-scss/_fading-entrances/fading-entrances.scss",
+	// "../../node_modules/animate-scss/_fading-exits/fading-exits.scss",
+	// "../../node_modules/animate-scss/_flippers/flippers.scss",
+	// "../../node_modules/animate-scss/_lightspeed/lightspeed.scss",
+	// "../../node_modules/animate-scss/_rotating-entrances/rotating-entrances.scss",
+	// "../../node_modules/animate-scss/_rotating-exits/rotating-exits.scss",
+	// "../../node_modules/animate-scss/_sliding-entrances/sliding-entrances.scss",
+	// "../../node_modules/animate-scss/_sliding-exits/sliding-exits.scss",
+	// "../../node_modules/animate-scss/_specials/specials.scss",
+	// "../../node_modules/animate-scss/_zooming-exits/zooming-exits.scss",
+	"../../node_modules/animate-scss/_zooming-entrances/zooming-entrances.scss";
+
 
 // @include font-face("Roboto-Black", "RBBL");
 
+
+@import "../../node_modules/owl.carousel/dist/assets/owl.carousel";
 @import "../blocks/**/*.scss";
 
 body { @include screen-media(); }
@@ -12,7 +47,7 @@ body, html {
 	font-size: #{$basesize}px;
 	line-height: calc(#{$basesize}px * 1.4);
 
-	@include xxs-block() {
+	@include media('<=xxs') {
 		font-size: calc(#{$basesize}px * 0.85);
 		line-height: calc(#{$basesize}px * 1.2);
 	}

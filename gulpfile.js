@@ -53,7 +53,7 @@ let pth = {
 	},
 	wtch: {
 		html: './src/**/*.html',
-		js: ['./src/js/**/*.js','./src/blocks/**/*.js'],
+		js: ['./src/js/**/*.js','./src/blocks/**/(*.js|*.js)'],
 		css: ['./src/scss/**/*.scss','./src/blocks/**/*.scss'],
 		img: './src/images/**/!(icon-*.svg|shape-*.svg)',
 		shp: './src/images/**/shape-*.svg',
@@ -196,14 +196,8 @@ function watch() {
 	gulp.watch(pth.wtch.fnts, fonts);
 }
 
-function grid(done) {
-	$.smartGrid('./src/scss/lib', pckg.smartgrid);
-	done();
-}
-
 const build = gulp.series(clear, gulp.parallel(html, js, jslib, styles, images, icons, shapes, fonts));
 
 exports.build = build;
 exports.watch = gulp.series(build, watch);
 exports.deploy = gulp.series(build, deploy);
-exports.grid = grid;

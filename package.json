@@ -2,7 +2,7 @@
 	"name": "gulp-scss-starter",
 	"version": "1.0.3",
 	"scripts": {
-		"postinstall": "npm run grid",
+		"postinstall": "",
 		"bem": "bemtree-from-html",
 		"start": "gulp watch --dev --sync",
 		"remote": "gulp watch --remote",
@@ -24,11 +24,11 @@
 	},
 	"license": "ISC",
 	"devDependencies": {
-		"@babel/core": "^7.12.10",
-		"@babel/preset-env": "^7.12.11",
+		"@babel/core": "^7.12.16",
+		"@babel/preset-env": "^7.12.16",
 		"babel-loader": "^8.2.2",
 		"bemtree-from-html": "^1.0.5",
-		"browser-sync": "^2.26.13",
+		"browser-sync": "^2.26.14",
 		"del": "^6.0.0",
 		"fancy-log": "^1.3.3",
 		"gulp": "^4.0.2",
@@ -44,16 +44,15 @@
 		"gulp-sass-glob": "^1.1.0",
 		"gulp-sourcemaps": "^3.0.0",
 		"gulp-svg-symbol-view": "^1.0.1",
+		"include-media": "^1.4.9",
 		"mkdirp2": "^1.0.4",
 		"vinyl-ftp": "^0.6.1",
-		"webpack-stream": "^6.1.1"
+		"webpack-stream": "^6.1.2"
 	},
 	"dependencies": {
-		"jquery": "^3.4.1",
-		"jquery-colorbox": "^1.6.4",
-		"jquery-form": "^4.2.2",
-		"owl.carousel": "^2.3.4",
-		"smart-grid": "^2.1.2"
+		"animate-scss": "^3.2.1",
+		"jquery": "^3.5.1",
+		"owl.carousel": "^2.3.4"
 	},
 	"externalJs": {
 		"jquery": "dist/jquery.min.js"
@@ -68,28 +67,5 @@
 		"from": "./src/**/!(_|temp)*.html",
 		"to": "src/blocks",
 		"omit": "@@,js-,active,col,row"
-	},
-	"smartgrid": {
-		"outputStyle": "scss",
-		"columns": 24,
-		"offset": "40px",
-		"container": {
-			"maxWidth": "1400px",
-			"fields": "20px"
-		},
-		"breakPoints": {
-			"xxxxlg": { "width": "1920px" },
-			"xxxlg": { "width": "1680px" },
-			"xxlg": { "width": "1440px" },
-			"xlg": { "width": "1280px" },
-			"lg": { "width": "1100px" },
-			"md": { "width": "960px" },
-			"sm": { "width": "780px" },
-			"xs": { "width": "640px" },
-			"xxs": { "width": "480px" },
-			"xxxs": { "width": "360px" }
-		},
-		"properties": [],
-		"oldSizeStyle": false
 	}
 }
