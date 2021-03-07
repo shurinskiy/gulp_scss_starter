@@ -44,6 +44,7 @@ $breakpoints: (
 body { @include screen-media(); }
 
 body, html {
+	box-sizing: border-box;
 	font-size: #{$basesize}px;
 	line-height: calc(#{$basesize}px * 1.4);
 
