@@ -42,7 +42,7 @@ let pth = {
 		root: './src/',
 		html: './src/[^_]*.html',
 		js: './src/js/common.js',
-		jslib: './src/js/!(common)*.js',
+		// jslib: './src/js/!(common)*.js',
 		css: './src/scss/style.scss',
 		scss: './src/scss/lib/',
 		img: './src/images/**/!(icon-*.svg|shape-*.svg)',
@@ -53,7 +53,7 @@ let pth = {
 	},
 	wtch: {
 		html: './src/**/*.html',
-		js: ['./src/js/**/*.js','./src/blocks/**/(*.js|*.js)'],
+		js: ['./src/js/**/*.js','./src/blocks/**/(*.js|*.json)'],
 		css: ['./src/scss/**/*.scss','./src/blocks/**/*.scss'],
 		img: './src/images/**/!(icon-*.svg|shape-*.svg)',
 		shp: './src/images/**/shape-*.svg',
@@ -106,7 +106,11 @@ function styles() {
 		.pipe($.sassGlob())
 		.pipe($.sass())
 		.on('error', swallowError)
-		.pipe($.autoprefixer({ cascade: false }))
+		.pipe($.autoprefixer({ 
+			overrideBrowserslist:  [ "last 4 version" ],
+			cascade: false, 
+			grid: true 
+		}))
 		.pipe($.if(isProd, $.cleanCss({ level: 2 })))
 		.pipe($.if(isDev, $.sourcemaps.write()))
 		.pipe(gulp.dest(pth.pbl.css))
