@@ -47,12 +47,6 @@ body, html {
 	box-sizing: border-box;
 	font-size: #{$basesize}px;
 	line-height: calc(#{$basesize}px * 1.4);
-
-	@include media('<=xxs') {
-		font-size: calc(#{$basesize}px * 0.85);
-		line-height: calc(#{$basesize}px * 1.2);
-	}
-
 	font-family: sans-serif;
 	background-color: #fafafa;
 	min-height: 100vh;

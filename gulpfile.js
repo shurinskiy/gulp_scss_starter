@@ -94,7 +94,6 @@ function jslib () {
 function html() {
 	return gulp.src(pth.src.html)
 		.pipe($.fileInclude({ prefix: '@@', basepath: pth.src.tmpl }))
-		.pipe($.lipsumVars())
 		.on('error', swallowError)
 		.pipe(gulp.dest(pth.pbl.html))
 		.pipe($.if(isSync, $.browserSync.stream()));

@@ -1,7 +1,4 @@
-// import "../blocks/someblock/someblock.js";
-// import "../blocks/someblock2/someblock2.js";
-
-
+import "./blocks.js";
 
 /* Polyfills */
 (function(e) {
