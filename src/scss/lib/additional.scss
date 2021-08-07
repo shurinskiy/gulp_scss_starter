@@ -25,9 +25,9 @@ $images-path: "images/";
 }
 
 
-/* Миксины */
+/* Утилиты */
 
-/*подключить шрифт*/ 
+// подключить шрифт 
 @mixin font-face($file, $family, $folder: "fonts/") { 
 	@font-face { 
 		font-family: $family; 
@@ -39,7 +39,7 @@ $images-path: "images/";
 	} 
 } 
   	
-/*вставить символ псевдографики*/ 
+// вставить символ псевдографики 
 @mixin inssymbol( $font,$symbol: '\0000',$pseudo: "after") { 
 	&:#{$pseudo} { 
 		content: "#{$symbol}"; 
@@ -49,7 +49,7 @@ $images-path: "images/";
 	} 
 } 
   	
-/*заполнить родительский блок*/ 
+// заполнить родительский блок 
 @mixin fill($spacing: 0, $index: 0) { 
 	position: absolute; 
 	display: block; 
@@ -59,7 +59,7 @@ $images-path: "images/";
 	z-index: $index; 
 } 
   	
-/*сохранять пропрорции*/ 
+// сохранять пропрорции 
 @mixin aspect-ratio($w, $h) { 
 	display: block; 
 	position: relative; 
@@ -72,7 +72,7 @@ $images-path: "images/";
 	> * { @include fill(); } 
 } 
 
-/* оптимизировать url для svg */
+// оптимизировать url для svg
 @function svg-url($svg) {
 	$encoded:'';
 	$slice: 2000;
@@ -93,7 +93,7 @@ $images-path: "images/";
 	@return url("data:image/svg+xml;charset=utf8,#{$encoded}");
 }
 
-/* спрятать элемент */
+// спрятать элемент
 @mixin hide {
 	display: none;
 	appearance: none;
@@ -110,7 +110,7 @@ $images-path: "images/";
 	outline: 1px dotted $color; 
 } 
 
-/* показать текущий диапазон */
+// показать текущий диапазон
 @mixin screen-media($color: #777) {
 	$breakpoints: (
 		xxxxlg: 1920,
@@ -151,7 +151,10 @@ $images-path: "images/";
 	}
 }
 
-/* сброс стилей */
+
+/* Сбросы */
+
+// общий сброс стилей
 @mixin reset() {
 	body,div,dl,dt,dd,ul,li,h1,h2,h3,h4,h5,h6,pre,code,form,fieldset,input,textarea,p,blockquote,th,td{
 		margin: 0;
@@ -199,4 +202,17 @@ $images-path: "images/";
 		max-width: 100%;
 		height: auto;
 	}
+}
+
+// сброс кнопки
+%reset-button {
+	box-sizing: border-box;
+	outline: none;
+	appearance: none;
+	background: none;
+	border: none;
+	padding: 0;
+	text-decoration: none;
+	cursor: pointer;
+	color: inherit;
 }

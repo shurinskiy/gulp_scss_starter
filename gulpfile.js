@@ -1,6 +1,6 @@
 const webpack = require('webpack');
-let gulp = require('gulp');
-let $ = require('gulp-load-plugins')({ pattern: '*' });
+const gulp = require('gulp');
+const $ = require('gulp-load-plugins')({ pattern: '*' });
 const isRemote = process.argv.indexOf('--remote') !== -1;
 const isSync = process.argv.indexOf('--sync') !== -1;
 const isDev = process.argv.indexOf('--dev') !== -1;
@@ -84,11 +84,14 @@ function js() {
 
 function jslib () {
 	let paths = [];
-	Object.entries(pckg.externalJs).forEach(function ([key, value], index) {
-		paths[index] = `node_modules/${key}/${value}`;
-	});
-	return gulp.src(paths)
-		.pipe(gulp.dest(pth.pbl.js));
+	if (Object.keys(pckg.externalJs).length !== 0) {
+		Object.entries(pckg.externalJs).forEach(function ([key, value], index) {
+			paths[index] = `node_modules/${key}/${value}`;
+		});
+
+		return gulp.src(paths)
+			.pipe(gulp.dest(pth.pbl.js));
+	}
 }
 
 function html() {

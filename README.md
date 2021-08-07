@@ -11,7 +11,7 @@
 
 `npm start`
 
-> Собрать проект в папку public:
+> Собрать проект в папку docs:
 
 `npm run build`
 
