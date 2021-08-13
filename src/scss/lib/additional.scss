@@ -97,6 +97,7 @@ $images-path: "images/";
 @mixin hide {
 	display: none;
 	appearance: none;
+	overflow: hidden;
 	border: none;
 	margin: 0;
 	padding: 0;
@@ -204,14 +205,26 @@ $images-path: "images/";
 	}
 }
 
-// сброс кнопки
-%reset-button {
+// общий сброс элемента
+%reset-input {
 	box-sizing: border-box;
-	outline: none;
+	vertical-align: middle;
+	display: inline-block;
+	white-space: normal;
 	appearance: none;
 	background: none;
+	box-shadow: none;
+	line-height: 1.1;
+	max-width: none;
+	outline: none;
 	border: none;
+	min-width: 0;
 	padding: 0;
+}
+
+// сброс кнопки
+%reset-button {
+	@extend %reset-input;
 	text-decoration: none;
 	cursor: pointer;
 	color: inherit;
