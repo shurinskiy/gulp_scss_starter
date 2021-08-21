@@ -1,6 +1,6 @@
-const webpack = require('webpack');
 const gulp = require('gulp');
-const $ = require('gulp-load-plugins')({ pattern: '*' });
+const sass = require('gulp-sass')(require('sass'));
+const $ = require('gulp-load-plugins')({ pattern: ['*', '!sass'] });
 const isRemote = process.argv.indexOf('--remote') !== -1;
 const isSync = process.argv.indexOf('--sync') !== -1;
 const isDev = process.argv.indexOf('--dev') !== -1;
@@ -63,8 +63,8 @@ let pth = {
 };
 
 function swallowError (error) {
-	console.log(error.toString())
-	this.emit('end')
+	console.log(error.toString());
+	this.emit('end');
 }
 
 function clear() {
@@ -106,14 +106,15 @@ function styles() {
 	return gulp.src(pth.src.css)
 		.pipe($.if(isDev, $.sourcemaps.init()))
 		.pipe($.sassGlob())
-		.pipe($.sass())
+		.pipe(sass())
 		.on('error', swallowError)
 		.pipe($.autoprefixer({ 
-			overrideBrowserslist:  [ "last 4 version" ],
+			overrideBrowserslist: [ "last 4 version" ],
 			cascade: false, 
 			grid: true 
 		}))
 		.pipe($.if(isProd, $.cleanCss({ level: 2 })))
+		.pipe($.if(isProd, $.groupCssMediaQueries()))
 		.pipe($.if(isDev, $.sourcemaps.write()))
 		.pipe(gulp.dest(pth.pbl.css))
 		.pipe($.if(isSync, $.browserSync.stream()))

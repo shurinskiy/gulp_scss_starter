@@ -1,6 +1,10 @@
 @import "lib/additional.scss"; 
 @include reset(); 
 
+// Include breakpoints badge
+body { @include screen-media(); }
+
+// Import media-query helper
 @import "../../node_modules/include-media/dist/_include-media.scss";
 
 $breakpoints: (
@@ -36,12 +40,10 @@ $breakpoints: (
 
 
 // @include font-face("Roboto-Black", "RBBL");
+// @import "../../node_modules/owl.carousel/dist/assets/owl.carousel";
 
-
-@import "../../node_modules/owl.carousel/dist/assets/owl.carousel";
+// Import BEM blocks scss
 @import "../blocks/**/*.scss";
-
-body { @include screen-media(); }
 
 body, html {
 	box-sizing: border-box;

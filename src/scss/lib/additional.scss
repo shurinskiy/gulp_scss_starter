@@ -95,7 +95,6 @@ $images-path: "images/";
 
 // спрятать элемент
 @mixin hide {
-	display: none;
 	appearance: none;
 	overflow: hidden;
 	border: none;
