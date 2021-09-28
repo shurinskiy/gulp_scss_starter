@@ -21,8 +21,8 @@ $breakpoints: (
 );
 
 // Import animate-scss
-@import
-	"../../node_modules/animate-scss/properties",
+// @import
+	// "../../node_modules/animate-scss/properties",
 	// "../../node_modules/animate-scss/_attention-seekers/attention-seekers.scss",
 	// "../../node_modules/animate-scss/_bouncing-entrances/bouncing-entrances.scss",
 	// "../../node_modules/animate-scss/_bouncing-exits/bouncing-exits.scss",
@@ -36,7 +36,7 @@ $breakpoints: (
 	// "../../node_modules/animate-scss/_sliding-exits/sliding-exits.scss",
 	// "../../node_modules/animate-scss/_specials/specials.scss",
 	// "../../node_modules/animate-scss/_zooming-exits/zooming-exits.scss",
-	"../../node_modules/animate-scss/_zooming-entrances/zooming-entrances.scss";
+	// "../../node_modules/animate-scss/_zooming-entrances/zooming-entrances.scss";
 
 
 // @include font-face("Roboto-Black", "RBBL");
