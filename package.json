@@ -64,6 +64,6 @@
 		"from": "src/**/!(_|temp)*.html",
 		"to": "src/blocks",
 		"js": "src/js/blocks.js",
-		"omit": "@@,js-,active,col,row,owl-carousel"
+		"omit": "@@,js-,active,col,row"
 	}
 }
