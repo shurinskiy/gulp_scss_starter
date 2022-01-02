@@ -99,6 +99,15 @@ function html() {
 	return gulp.src(pth.src.html)
 		.pipe($.fileInclude({ prefix: '@@', basepath: pth.src.tmpl }))
 		.on('error', swallowError)
+		.pipe($.if(isProd, $.versionNumber({
+			'value': '%DT%',
+			'append': {
+				'to': [
+					{ 'type': 'js', 'files': ['common.js'] },
+					{ 'type': 'css', 'files': ['style.css'] }
+				]
+			}
+		})))
 		.pipe(gulp.dest(pth.pbl.html))
 		.pipe($.if(isSync, $.browserSync.stream()));
 }
@@ -125,12 +134,10 @@ function styles() {
 }
 
 function images() {
-	return $.del([pth.pbl.img+'*']).then(function(paths) {
-		gulp.src(pth.src.img)
+	return gulp.src(pth.src.img)
+		.pipe($.newer(pth.pbl.img))
 		.pipe(gulp.dest(pth.pbl.img))
 		.pipe($.if(isSync, $.browserSync.stream()));
-		console.log('Deleted files and folders:\n', paths.join('\n'));
-	});
 }
 
 function icons() {
@@ -166,11 +173,11 @@ function fonts() {
 }
 
 function deploy(e, ...args) {
-	var conn = $.vinylFtp.create({
+	const conn = $.vinylFtp.create({
 		host: pckg.ftp.host,
 		user: pckg.ftp.user,
 		password: pckg.ftp.password,
-		parallel: 10,
+		parallel: 5,
 		log: $.fancyLog
 	});
 
@@ -180,7 +187,7 @@ function deploy(e, ...args) {
 	}, args);
 
 	if (process.argv.indexOf('--all') !== -1) {
-		return gulp.src(pth.pbl.root+'**', {base: pth.pbl.root, buffer: false})
+		return gulp.src(pth.pbl.root+'**', {base: pth.pbl.root})
 			.pipe(conn.newerOrDifferentSize(pckg.ftp.workdir))
 			.pipe(conn.dest(pckg.ftp.workdir));
 	} else {

@@ -30,19 +30,19 @@ $images-path: "images/";
 /* Утилиты */
 
 // подключить шрифт 
-@mixin font-face($file, $family, $folder: "fonts/") { 
+@mixin font-face($file, $family, $weight: "normal", $folder: "fonts/") { 
 	@font-face { 
 		font-family: $family; 
 		src: url("#{$folder}#{$file}.eot?#iefix") format('embedded-opentype'), 
 			url("#{$folder}#{$file}.woff") format('woff'), 
 			url("#{$folder}#{$file}.ttf")  format('truetype'); 
-		font-weight: normal; 
+		font-weight: $weight; 
 		font-style: normal; 
 	} 
 } 
   	
 // вставить символ псевдографики 
-@mixin inssymbol( $font,$symbol: '\0000',$pseudo: "after") { 
+@mixin inssymbol( $font, $symbol: '\0000', $pseudo: "after") { 
 	&:#{$pseudo} { 
 		content: "#{$symbol}"; 
 		font-family: $font; 
