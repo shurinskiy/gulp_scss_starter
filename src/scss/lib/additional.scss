@@ -35,6 +35,7 @@ $images-path: "images/";
 		font-family: $family; 
 		src: url("#{$folder}#{$file}.eot?#iefix") format('embedded-opentype'), 
 			url("#{$folder}#{$file}.woff") format('woff'), 
+			url("#{$folder}#{$file}.woff2") format('woff2'), 
 			url("#{$folder}#{$file}.ttf")  format('truetype'); 
 		font-weight: $weight; 
 		font-style: normal; 

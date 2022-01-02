@@ -44,6 +44,7 @@
 		"gulp-sass-glob": "^1.1.0",
 		"gulp-sourcemaps": "^3.0.0",
 		"gulp-svg-symbol-view": "^1.0.1",
+		"gulp-ttf2woff2": "^4.0.1",
 		"gulp-version-number": "^0.2.4",
 		"include-media": "^1.4.10",
 		"sass": "^1.45.2",
