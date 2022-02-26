@@ -99,7 +99,7 @@ function html() {
 	return gulp.src(pth.src.html)
 		.pipe($.fileInclude({ prefix: '@@', basepath: pth.src.tmpl }))
 		.on('error', swallowError)
-		.pipe($.if(isProd, $.versionNumber({
+		/* .pipe($.if(isProd, $.versionNumber({
 			'value': '%DT%',
 			'append': {
 				'to': [
@@ -107,7 +107,7 @@ function html() {
 					{ 'type': 'css', 'files': ['style.css'] }
 				]
 			}
-		})))
+		}))) */
 		.pipe(gulp.dest(pth.pbl.html))
 		.pipe($.if(isSync, $.browserSync.stream()));
 }
@@ -160,18 +160,16 @@ function shapes() {
 };
 
 function fonts() {
-	return $.del([pth.pbl.fnts+'*']).then(function(paths) {
-		gulp.src(pth.src.fnts)
+	return gulp.src(pth.src.fnts)
+		.pipe($.newer(pth.pbl.fnts))
 		.pipe($.fonter({
 			formats: ['woff', 'ttf', 'eot'],
 			compound2simple: true
-		  }))		
+		}))		
 		.pipe(gulp.dest(pth.pbl.fnts))
 		.pipe($.ttf2woff2())
 		.pipe(gulp.dest(pth.pbl.fnts))
 		.pipe($.if(isSync, $.browserSync.stream()));
-		console.log('Deleted files and folders:\n', paths.join('\n'));
-	});
 }
 
 function deploy(e, ...args) {
