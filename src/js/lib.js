@@ -1,3 +1,28 @@
+/* 
+* Упрощенный аналог wow.js. Отслеживает появление элемента снизу
+* в области просмотра браузера. Добавляет и (опционально)
+* убирает класс .active
+* 
+* @разметка:
+* 
+<div class="someblock" data-shift="2"></div>
+<div class="someblock" data-shift="2" data-repeat></div>
+<div class="someblock" data-shift="2" data-repeat></div>
+* 
+* @параметры разметки: 
+* 
+* data-shift="2" - множитель показывающий на какую часть от своей 
+* высоты, должен показаться снизу элемент, чтобы добавился класс
+* 
+* data-repeat - убирать класс, если элемент вновь уходит за нижндюю
+* границу браузера
+* 
+* @вызов:
+* 
+import { scrollClassToggle } from "../../js/lib";
+scrollClassToggle(document.querySelectorAll('.someblock'))
+*/
+
 export const scrollClassToggle = (items) => {
 	if (items.length) {
 		const classToggle = function(item) {
@@ -18,6 +43,40 @@ export const scrollClassToggle = (items) => {
 	}
 }
 
+/* 
+* Подменяет стантартный малоуправляемый html тег select 
+* на более управляемую структуру, сохраняя функциональность селекта
+* 
+* @исходная разметка:
+* 
+<select class="someblock__select">
+	<option value="0">consectetur</option>
+	<option value="1">adipisicing</option>
+	<option value="2">expedita</option>
+</select>
+* 
+* @результирующая разметка:
+* 
+* <div class="someblock__select select">
+* 	<select style="display: none;">
+* 		<option value="0">consectetur</option>
+* 		<option value="1">adipisicing</option>
+* 		<option value="2">expedita</option>
+* 	</select>
+* 	<div class="select__head">consectetur</div>
+* 		<ul class="select__list">
+* 			<li class="select__item" data-value="0">consectetur</li>
+* 			<li class="select__item" data-value="1">adipisicing</li>
+* 			<li class="select__item" data-value="2">expedita</li>
+* 		</ul>
+* 	</div>
+* </div>
+* 
+* @вызов:
+* 
+import { selectTweaker } from "../../js/lib";
+selectTweaker(document.querySelectorAll('.someblock__select'));
+*/
 
 export const selectTweaker = (items, name = 'select') => {
 
@@ -59,23 +118,123 @@ export const selectTweaker = (items, name = 'select') => {
 	}
 }
 
+/* 
+* По событию добавляет (переключает) класс у текущего блока 
+* и удаляет этот класс у всех соседних. Может обрабатывать 
+* несколько событик (click, hower и т.д.)
+* 
+* @разметка
+* 
+<div class="accordeon">
+	<div class="accordeon__item">
+		<h2 class="accordeon__head opened"></h2>
+		<div class="accordeon__block"></div>
+	</div>
+	<div class="accordeon__item">
+		<h2 class="accordeon__head"></h2>
+		<div class="accordeon__block"></div>
+	</div>
+	<div class="accordeon__item">
+		<h2 class="accordeon__head"></h2>
+		<div class="accordeon__block"></div>
+	</div>
+</div>
+*
+* @вызов (с уточнением контекста):
+*
+import { makeAccordion } from "../../js/lib";
+document.querySelectorAll('.accordeon').forEach((accordeon) => {
+	makeAccordion(accordeon.querySelectorAll('.accordeon__head'), { 
+		events: 'click, mouseenter',
+		cls: 'active,
+		toggle: false
+	});
+});
+*
+* @параметры вызова:
+*
+* cls - переключаемый класс
+* еvents - отслеживаемые события (строка, через запятую)
+* toggle - не просто добавлять, а переключать класс у текущего элемента 
+*/
 
-export const makeAccordion = function(items, events = 'click', name = 'opened', toggle = false) {
+export const makeAccordion = function(items, options = {}) {
+	const cls = options.cls || 'opened';
+	const events = options.events || 'click';
+	const toggle = options.toggle;
+
 	events.split(' ').forEach(event => {
 		items.forEach(item => {
 			item.addEventListener(event, function(e) {
 				e.stopPropagation();
-				items.forEach((item) => (item != this) && item.classList.remove(`${name}`));
+				items.forEach((item) => (item != this) && item.classList.remove(`${cls}`));
 			
-				if (this.classList != `${name}`)
-					this.classList[(toggle) ? 'toggle':'add'](`${name}`);
+				if (this.classList != `${cls}`)
+					this.classList[(toggle) ? 'toggle':'add'](`${cls}`);
 			});
 		});
 	});
 }
 
+/* 
+* Простая галерея (например для детального вида продукта) 
+* под главной картинкой подставляется навигация в виде превьюшек с 
+* фоном от соответствующих картинок. Опционально, добавляеются 
+* кнопки стрелочной навигации
+* 
+* @исходная разметка:
+* 
+<div class="someblock">
+	<img src="https://source.unsplash.com/random/600x600?cats" alt="">
+	<img src="https://source.unsplash.com/random/601x600?cats" alt="">
+	<img src="https://source.unsplash.com/random/600x601?cats" alt="">
+	<img src="https://source.unsplash.com/random/601x601?cats" alt="">
+</div>
+* 
+* @результирующая разметка:
+* 
+* <div class="someblock gallery">
+* 	<div class="gallery__frame">
+* 		<div class="gallery__image active">
+* 			<img src="https://source.unsplash.com/random/600x600?cats" alt="">
+* 		</div>
+* 		<div class="gallery__image">
+* 			<img src="https://source.unsplash.com/random/601x600?cats" alt="">
+* 		</div>
+* 		<div class="gallery__image">
+* 			<img src="https://source.unsplash.com/random/600x601?cats" alt="">
+* 		</div>
+* 		<div class="gallery__image">
+* 			<img src="https://source.unsplash.com/random/601x601?cats" alt="">
+* 		</div>
+* 	</div>
+* 	<div class="gallery__thumbs">
+* 		<span class="gallery__thumb active" style="background-image: url(https://source.unsplash.com/random/600x600?cats)"></span>
+* 		<span class="gallery__thumb" style="background-image: url(https://source.unsplash.com/random/601x600?cats);"></span>
+* 		<span class="gallery__thumb" style="background-image: url(https://source.unsplash.com/random/600x601?cats);"></span>
+* 		<span class="gallery__thumb" style="background-image: url(https://source.unsplash.com/random/601x601?cats);"></span>
+* 	</div>
+* 	<button class="gallery__prev"></button>
+* 	<button class="gallery__next"></button>
+* </div>
+* 
+* @вызов:
+* 
+import { makeGallery } from "../../js/lib";
+makeGallery(document.querySelectorAll('.someblock'), { 
+	cls: gallery,
+	navigation: true 
+});
+* 
+* @параметры вызова:
+* 
+* cls - имя класса галереи в динамически создаваемой разметке
+* navigation - включение дополнительной стрелочной навигации
+*/
 
-export const galleryTweaker = (items, name = 'gallery', navigation = false) => {
+export const makeGallery = (items, options = {}) => {
+	const cls = options.cls || 'gallery';
+	const navigation = options.navigation;
 
 	for (let i = 0; i < items.length; i++) {
 		const frame = items[i];
@@ -83,14 +242,14 @@ export const galleryTweaker = (items, name = 'gallery', navigation = false) => {
 		const _wrapper = document.createElement('div');
 		const _thumbs = document.createElement('div');
 		
-		_wrapper.className = `${frame.className} ${name}`;
-		_thumbs.className = `${name}__thumbs`;
-		frame.className = `${name}__frame`;
+		_wrapper.className = `${frame.className} ${cls}`;
+		_thumbs.className = `${cls}__thumbs`;
+		frame.className = `${cls}__frame`;
 		
 		for (let j = 0; j < images.length; j++) {
 			let active = j ? '':'active';
 			let _image = document.createElement('div');
-			_image.className = `${name}__image ${active}`;
+			_image.className = `${cls}__image ${active}`;
 			frame.append(_image);
 			_image.append(images[j]);
 		}
@@ -101,17 +260,16 @@ export const galleryTweaker = (items, name = 'gallery', navigation = false) => {
 		for (let k = 0; k < images.length; k++) {
 			let active = k ? '':'active';
 			let _thumb = document.createElement('span');
-			_thumb.className = `${name}__thumb ${active}`;
+			_thumb.className = `${cls}__thumb ${active}`;
 			_thumb.style.backgroundImage = `url(${images[k].src})`;
-			_thumb.style.backgroundSize = 'cover';
 			_thumbs.append(_thumb);
 		}
 
 		if (navigation) {
 			const _prev = document.createElement('button');
 			const _next = document.createElement('button');
-			_prev.className = `${name}__prev`;
-			_next.className = `${name}__next`;
+			_prev.className = `${cls}__prev`;
+			_next.className = `${cls}__next`;
 			_wrapper.append(_prev, _next);
 		}
 
@@ -141,25 +299,72 @@ export const galleryTweaker = (items, name = 'gallery', navigation = false) => {
 			}
 
 			// если клик по превьюшке
-			if(e.target.classList.contains(`${name}__thumb`)) {
+			if(e.target.classList.contains(`${cls}__thumb`)) {
 				clearActive();
 				images[[..._thumbs.children].findIndex(el => el == e.target)].parentNode.classList.add('active');
 				e.target.classList.add('active');
 			}
 
 			// если клик по кнопке "prev"
-			if (e.target.classList.contains(`${name}__prev`))
+			if (e.target.classList.contains(`${cls}__prev`))
 				moveActive(-1);
 
 			// если клик по кнопке "next"
-			if (e.target.classList.contains(`${name}__next`))
+			if (e.target.classList.contains(`${cls}__next`))
 				moveActive(1);
 		});
 	}
 }
 
+/* 
+* Простой, вертикальный параллакс-эффект. Создает для указанного
+* блока - блок-подложку, с фоном задаваемым атрибутом data-image.
+* При прокручивании страницы, смещает подложку относительно родительского
+* блока, со скоростью определяемой коэффициентом из атрибута data-speed.
+* 
+* @исходная разметка 
+* 
+<div class="someblock" data-image="https://source.unsplash.com/random/350x650?nature" data-speed="7"></div>
+* 
+* @параметры разметки
+* data-image - ссылка на изображение для подложки
+* data-speed - коэффициент увеличения скорости эффекта
+* 
+* @результирующая разметка
+* 
+* <div class="someblock parallax" 
+* 	data-image="https://source.unsplash.com/random/350x650?nature" 
+* 	data-speed="7" 
+* 	style="
+* 		position: relative; 
+* 		overflow: hidden;"
+* >
+* 	<div class="parallax__underlay" 
+* 		style="
+* 			background-size: cover; 
+* 			background-position: center center; 
+* 			background-repeat: no-repeat; 
+* 			background-color: transparent; 
+* 			background-image: url(https://source.unsplash.com/random/350x650?nature); 
+* 			position: absolute; 
+* 			z-index: 1; 
+* 			inset: -206.067px 0px 0px; 
+* 			transform: translateY(108.092px);"
+* 	>
+* 	</div>
+* </div>
+* 
+* @вызов
+* 
+import { makeParallax } from "../../js/lib";
+makeParallax(document.querySelectorAll('.someblock'));
+* 
+* @параметры вызова:
+* 
+* cls - имя класса в динамически создаваемой разметке
+*/
 
-export const makeParallax = (items, name = "parallax") => {
+export const makeParallax = (items, cls = "parallax") => {
 	for (let i = 0; i < items.length; i++) {
 		const item = items[i];
 		const _underlay = document.createElement('div');
@@ -178,9 +383,9 @@ export const makeParallax = (items, name = "parallax") => {
 		}
 
 		Object.assign(_underlay.style, styles);
-		_underlay.classList.add(`${name}__underlay`);
+		_underlay.classList.add(`${cls}__underlay`);
 
-		item.classList.add(`${name}`);
+		item.classList.add(`${cls}`);
 		item.style.position = 'relative';
 		item.style.overflow = 'hidden';
 		item.prepend(_underlay);
@@ -198,5 +403,129 @@ export const makeParallax = (items, name = "parallax") => {
 
 		window.addEventListener('scroll', translateY);
 		translateY();
+	}
+}
+
+/* 
+* Вспомогательная функция создающая подложку для будущего 
+* использования с модальным окном и т.п. Подложка добавляется
+* в конце тега body текущей странички
+*
+* @результирующая структура:
+*
+* <div class="modal" id="modal__underlay" data-scroll-lock-scrollable="">
+* 	<div class="modal__body">
+* 		<span class="modal__close"></span>
+* 		<div class="modal__content"></div>
+* 	</div>
+* </div>
+*
+* @вызов:
+*
+addUnderlay('modal');
+*/
+
+export const addUnderlay = function(cls = 'modal') {
+	if(! document.querySelector(`#${cls}__underlay`)) {
+		const _underlay = document.createElement('div');
+		const _body = document.createElement('div');
+		const _close = document.createElement('span');
+		const _content = document.createElement('div');
+		
+		_underlay.className = `${cls}`;
+		_underlay.id = `${cls}__underlay`;
+		_underlay.setAttribute('data-scroll-lock-scrollable', '');
+		_body.className = `${cls}__body`;
+		_close.className = `${cls}__close`;
+		_content.className = `${cls}__content`;
+
+		_body.append(_close);
+		_body.append(_content);
+		_underlay.append(_body);
+		document.body.append(_underlay);
+	}
+}
+
+/* 
+* Простое модальное окно. Слушает элементы имеющие data-атрибут с 
+* именем укзанным в параметре cls при вызове. При клике по такому
+* элементу либо находит блок, по id указанному в значении data-атрибута,
+* либо, если в значении data-атрибута указана #, берет внутренний html этого 
+* элемента и выводит в модальном окне. Может работать с внешними 
+* скриптами (scrollLock, Inputmask), если они переданы в качестве
+* параметров при вызове.
+* 
+* @элемент для прослушивания:
+* <span data-modal="someblock"></span>
+* 
+* @вызов:
+* 
+import { addUnderlay, makeModalFrame } from "../../js/lib";
+addUnderlay('modal');
+makeModalFrame({ cls: 'modal' });
+* 
+* @вызов с передачей внешних скриптов:
+* 
+import { addUnderlay, makeModalFrame } from "../../js/lib";
+import scrollLock from 'scroll-lock';
+import Inputmask from "inputmask";
+addUnderlay('modal');
+makeModalFrame({ 
+	cls: 'modal',
+	scrollLock,
+	Inputmask: Inputmask({
+		"mask": "+7 (999) 999-99-99", 
+		showMaskOnHover: false
+	})
+});
+*/
+
+export const makeModalFrame = function(options = {}) {
+	const { scrollLock, Inputmask } = options;
+	const cls = options.cls || 'modal';
+
+	const modal = document.querySelector(`#${cls}__underlay`);
+	const body = modal.querySelector(`.${cls}__content`);
+	
+	if (modal) {
+		const close = function(e) {
+			e.preventDefault();
+			if(typeof scrollLock !== 'undefined') {
+				scrollLock.clearQueueScrollLocks();
+				scrollLock.enablePageScroll();
+			}
+
+			modal.className = `${cls}`;
+			modal.style.display = "none";
+			body.innerHTML = '';
+		}
+
+		const open = function(e) {
+			e.preventDefault();
+			
+			if (getComputedStyle(modal).display !== 'none') 
+				close(e);
+
+			const id = e.target.dataset[`${cls}`] || 'error';
+			const content = (id == '#') ? e.target.innerHTML : document.querySelector('#' + id).innerHTML;
+
+			body.insertAdjacentHTML('beforeend', content);
+			modal.classList.add(id != '#' ? `${cls}_${id}`:`${cls}_self`);
+			modal.style.display = "block";
+
+			if(typeof scrollLock !== 'undefined')
+				scrollLock.disablePageScroll();
+			
+			if(typeof Inputmask !== 'undefined') 
+				Inputmask.mask(body.querySelectorAll('input[type="tel"]'));
+		}
+
+		window.addEventListener('click', (e) => {
+			if (e.target.hasAttribute(`data-${cls}`)) 
+				open(e);
+
+			if (e.target == modal || e.target.classList.contains(`${cls}__close`))
+				close(e);
+		});
 	}
 }
