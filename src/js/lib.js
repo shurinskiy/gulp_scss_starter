@@ -1,3 +1,123 @@
+/* ======== Вспомогательные функции ======== */
+
+
+// Получить высоту скрытого элемента
+export const getHeight = (el) => {
+	if (!el) return;
+
+	const computed = window.getComputedStyle(el);
+	let height = (computed.boxSizing === "border-box") ? el.offsetHeight : el.offsetHeight - parseFloat(computed.paddingTop) - parseFloat(computed.paddingBottom) - parseFloat(computed.borderTopWidth) - parseFloat(computed.borderBottomWidth);
+
+	if (computed.height === 'auto' && computed.display === 'none') {
+		if (!el?.cloneNode) return null;
+		
+		const clone = el.cloneNode(true);
+		
+		Object.assign(clone.style, {
+			boxSizing: 'border-box',
+			visibility: 'hidden',
+			overflow: 'visible',
+			maxHeight: 'none',
+			display: 'block',
+			height: 'auto',
+			opacity: '0',
+		});
+		
+		el.after(clone);
+		height = clone.offsetHeight;
+		clone.remove();
+	}
+
+	return height;
+}
+
+
+// Плавно скрыть элемент
+export const slideUp = (el, duration = 500, cb) => {
+	if ((el.style.transitionDuration && el.style.transitionProperty) || window.getComputedStyle(el).display === 'none') return;
+
+	const set = {
+		overflow: 'hidden',
+		paddingBottom: 0,
+		marginBottom: 0,
+		paddingTop: 0,
+		marginTop: 0,
+		height: 0
+	}
+	
+	const transition = {
+		transitionProperty: 'height, margin, padding',
+		transitionDuration: duration + 'ms',
+		height: el.offsetHeight + 'px',
+		boxSizing: 'border-box',
+	}
+		
+	Object.assign(el.style, transition);
+	el.offsetHeight;
+	Object.assign(el.style, set);
+
+	window.setTimeout(() => {
+		el.removeAttribute('style');
+		el.style.display = 'none';
+		if (typeof cb === 'function') return cb.call(el);
+	}, duration);
+}
+
+
+// Плавно показать элемент
+export const slideDown = (el, duration = 500, cb) => {
+	if ((el.style.transitionDuration && el.style.transitionProperty) || window.getComputedStyle(el).display !== 'none') return;
+
+	el.style.display = 'block';
+
+	const set = {
+		overflow: 'hidden',
+		paddingBottom: 0,
+		marginBottom: 0,
+		paddingTop: 0,
+		marginTop: 0,
+		height: 0
+	}
+	
+	const transition = {
+		transitionProperty: 'height, margin, padding',
+		transitionDuration: duration + 'ms',
+		height: el.offsetHeight + 'px',
+		boxSizing: 'border-box',
+	}
+
+	Object.assign(el.style, set);
+	el.offsetHeight;
+	Object.assign(el.style, transition);
+
+	el.style.removeProperty('padding-top');
+	el.style.removeProperty('padding-bottom');
+	el.style.removeProperty('margin-top');
+	el.style.removeProperty('margin-bottom');
+
+	window.setTimeout(() => {
+		el.style.removeProperty('box-sizing');
+		el.style.removeProperty('height');
+		el.style.removeProperty('overflow');
+		el.style.removeProperty('transition-duration');
+		el.style.removeProperty('transition-property');
+		if (typeof cb === 'function') return cb.call(el);
+	}, duration);
+}
+
+
+// Плавно переключить отображение элемента
+export const slideToggle = (el, duration, cb) => {
+	if (window.getComputedStyle(el).display === 'none') {
+		return slideDown(el, duration, cb);
+	} else {
+		return slideUp(el, duration, cb);
+	}
+}
+
+
+/* ======== Готовые решения ======== */
+
 /* 
 * Упрощенный аналог wow.js. Отслеживает появление элемента снизу
 * в области просмотра браузера. Добавляет и (опционально)
@@ -158,23 +278,57 @@ document.querySelectorAll('.accordeon').forEach((accordeon) => {
 * toggle - не просто добавлять, а переключать класс у текущего элемента 
 */
 
-export const makeAccordion = function(items, options = {}) {
-	const cls = options.cls || 'opened';
+export const roughAccordion = (items, options = {}) => {
+	const name = options.name || 'opened';
 	const events = options.events || 'click';
+	const toggle = options.toggle;
+	
+	events.split(' ').forEach(event => {
+		items.forEach(item => {
+			item.addEventListener(event, function(e) {
+				e.stopPropagation();
+				items.forEach(item => (item != this) && item.classList.remove(`${name}`));
+			
+				if (this.classList != `${name}`)
+					this.classList[(toggle) ? 'toggle':'add'](`${name}`);
+			});
+		});
+	});
+}
+
+
+/* Плавный аккордеон */
+
+export const smoothAccordion = function(items, options = {}) {
+	const name = options.name || 'opened';
+	const events = options.events || 'click';
+	const duration = options.duration || 400;
 	const toggle = options.toggle;
 
 	events.split(' ').forEach(event => {
 		items.forEach(item => {
 			item.addEventListener(event, function(e) {
 				e.stopPropagation();
-				items.forEach((item) => (item != this) && item.classList.remove(`${cls}`));
-			
-				if (this.classList != `${cls}`)
-					this.classList[(toggle) ? 'toggle':'add'](`${cls}`);
-			});
-		});
+
+				items.forEach(item => {
+					if (item != this) {
+						slideUp(item.nextElementSibling, duration);
+						item.classList.remove(`${name}`);
+					}
+				});
+
+				if (toggle) {
+					slideToggle(item.nextElementSibling, duration);
+					this.classList.toggle(`${name}`);
+				} else {
+					slideDown(item.nextElementSibling, duration);
+					this.classList.add(`${name}`);
+				}
+			})
+		})
 	});
 }
+
 
 /* 
 * Простая галерея (например для детального вида продукта) 
@@ -249,21 +403,17 @@ export const makeGallery = (items, options = {}) => {
 		for (let j = 0; j < images.length; j++) {
 			let active = j ? '':'active';
 			let _image = document.createElement('div');
+			let _thumb = document.createElement('span');
 			_image.className = `${cls}__image ${active}`;
+			_thumb.className = `${cls}__thumb ${active}`;
+			_thumb.style.backgroundImage = `url(${images[j].src})`;
 			frame.append(_image);
 			_image.append(images[j]);
+			_thumbs.append(_thumb);
 		}
 
 		frame.parentNode.append(_wrapper);
 		_wrapper.append(frame, _thumbs);
-
-		for (let k = 0; k < images.length; k++) {
-			let active = k ? '':'active';
-			let _thumb = document.createElement('span');
-			_thumb.className = `${cls}__thumb ${active}`;
-			_thumb.style.backgroundImage = `url(${images[k].src})`;
-			_thumbs.append(_thumb);
-		}
 
 		if (navigation) {
 			const _prev = document.createElement('button');
@@ -425,7 +575,7 @@ export const makeParallax = (items, cls = "parallax") => {
 addUnderlay('modal');
 */
 
-export const addUnderlay = function(cls = 'modal') {
+export const addUnderlay = (cls = 'modal') => {
 	if(! document.querySelector(`#${cls}__underlay`)) {
 		const _underlay = document.createElement('div');
 		const _body = document.createElement('div');
@@ -490,6 +640,7 @@ export const makeModalFrame = function(options = {}) {
 	if (modal) {
 		const close = function(e) {
 			e.preventDefault();
+
 			if(typeof scrollLock !== 'undefined') {
 				scrollLock.clearQueueScrollLocks();
 				scrollLock.enablePageScroll();
@@ -502,12 +653,12 @@ export const makeModalFrame = function(options = {}) {
 
 		const open = function(e) {
 			e.preventDefault();
-			
+
 			if (getComputedStyle(modal).display !== 'none') 
 				close(e);
 
-			const id = e.target.dataset[`${cls}`] || 'error';
-			const content = (id == '#') ? e.target.innerHTML : document.querySelector('#' + id).innerHTML;
+			const id = e.currentTarget.dataset[`${cls}`] || 'error';
+			const content = (id == '#') ? e.currentTarget.innerHTML : document.querySelector('#' + id).innerHTML;
 
 			body.insertAdjacentHTML('beforeend', content);
 			modal.classList.add(id != '#' ? `${cls}_${id}`:`${cls}_self`);
@@ -520,12 +671,15 @@ export const makeModalFrame = function(options = {}) {
 				Inputmask.mask(body.querySelectorAll('input[type="tel"]'));
 		}
 
-		window.addEventListener('click', (e) => {
-			if (e.target.hasAttribute(`data-${cls}`)) 
-				open(e);
+		document.querySelectorAll(`[data-${cls}]`).forEach(item => {
+			item.addEventListener('click', open);
+		});
 
+		document.addEventListener('click', (e) => {
 			if (e.target == modal || e.target.classList.contains(`${cls}__close`))
 				close(e);
 		});
 	}
 }
+
+

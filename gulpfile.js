@@ -99,15 +99,7 @@ function html() {
 	return gulp.src(pth.src.html)
 		.pipe($.fileInclude({ prefix: '@@', basepath: pth.src.tmpl }))
 		.on('error', swallowError)
-		/* .pipe($.if(isProd, $.versionNumber({
-			'value': '%DT%',
-			'append': {
-				'to': [
-					{ 'type': 'js', 'files': ['common.js'] },
-					{ 'type': 'css', 'files': ['style.css'] }
-				]
-			}
-		}))) */
+		// .pipe($.newer(pth.pbl.html))
 		.pipe(gulp.dest(pth.pbl.html))
 		.pipe($.if(isSync, $.browserSync.stream()));
 }
@@ -206,7 +198,8 @@ function watch() {
 	gulp.watch(pth.wtch.js, js);
 	gulp.watch(pth.wtch.html, html);
 	gulp.watch(pth.wtch.css, styles);
-	gulp.watch(pth.wtch.img, gulp.parallel(images, icons));
+	// gulp.watch(pth.wtch.img, gulp.parallel(images, icons));
+	gulp.watch(pth.wtch.img, images);
 	gulp.watch(pth.wtch.icn, icons);
 	gulp.watch(pth.wtch.shp, shapes);
 	gulp.watch(pth.wtch.fnts, fonts);
