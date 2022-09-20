@@ -145,7 +145,7 @@ scrollClassToggle(document.querySelectorAll('.someblock'))
 
 export const scrollClassToggle = (items) => {
 	if (items.length) {
-		const classToggle = function(item) {
+		const classToggle = (item) => {
 			const repeat = item.dataset['repeat'] != undefined;
 			const box = item.getBoundingClientRect();
 			const shift = box.height/item.dataset['shift'] || 1;
@@ -154,14 +154,53 @@ export const scrollClassToggle = (items) => {
 	
 			if (repeat || !item.classList.contains('active'))
 				item.classList[(over && under) ? 'add': 'remove']('active');
-		}
+		};
 		
-		for (let i = 0; i < items.length; i++) {
-			window.addEventListener('scroll', () => classToggle(items[i]));
-			classToggle(items[i]);
-		}
+		[...items].forEach(item => {
+			window.addEventListener('scroll', () => classToggle(item));
+			classToggle(item);
+		});
 	}
 }
+
+
+export const scrollBasedToggle = (sticky, items, options = {}) => {
+	const current = options.current || 'current';
+	const active = options.active || 'active';
+	const first = options.first || false;
+	const name = sticky.className.split(' ')[0];
+	const _wrapper = document.createElement('div');
+
+	_wrapper.className = `${name}-outer`;
+	sticky.parentNode.append(_wrapper);
+	_wrapper.append(sticky);
+
+	Object.assign(sticky.style, {
+		position: 'sticky',
+		top: 0
+	});
+
+	if (items.length) {
+		const classToggle = (items, outer, active) => {
+			const box = outer.getBoundingClientRect();
+			const step = Math.floor(Math.abs(box.top) / outer.scrollHeight * (items.length + 1));
+			
+			if (box.top < 0 && box.bottom - window.innerHeight > 0) {
+				for (let i = 0; i < items.length; i++) {
+					items[i].classList[(i <= step) ? 'add':'remove'](`${active}`);
+					items[i].classList.remove(`${current}`);
+				}
+				items[step].classList.add(`${current}`);
+
+			} else if (box.top > 0 && first) {
+				items[0].classList.remove(`${active}`, `${current}`);
+			}
+		};
+		
+		window.addEventListener('scroll', () => classToggle(items, _wrapper, active));
+	}
+}
+
 
 /* 
 * Подменяет стантартный малоуправляемый html тег select 
