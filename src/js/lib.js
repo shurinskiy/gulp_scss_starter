@@ -1,6 +1,5 @@
 /* ======== Вспомогательные функции ======== */
 
-
 // Получить высоту скрытого элемента
 export const getHeight = (el) => {
 	if (!el) return;
@@ -163,6 +162,45 @@ export const scrollClassToggle = (items) => {
 	}
 }
 
+/* 
+* Переключатель классов основанный на скролле. Метод принимает в параметры
+* блок содержащий элементы, для которого создается обертка с тем же классом, 
+* но с окончанием "-outer". Этой обертке, надо задать стилевую высоту, которая
+* будет определять продолжительность эффекта. Высота обертки, должна быть гарантированно
+* больше высоты блока с элементами.
+* 
+* @разметка:
+* 
+<div class="scroll__items">
+	<div class="scroll__item active current"></div>
+	<div class="scroll__item"></div>
+	<div class="scroll__item"></div>
+	<div class="scroll__item"></div>
+</div>
+* 
+* 
+* @вызов:
+* 
+import { scrollBasedToggle } from "../../js/lib";
+const sticky = document.querySelector('.scroll__items');
+const items = sticky?.querySelectorAll('.scroll__item');
+
+if (sticky && items) {
+	scrollBasedToggle(sticky, items, { 
+		current: 'current',
+		active: 'actuve', 
+		first: false, 
+	});
+}
+* 
+* @параметры вызова:
+*
+* sticky - блок содержащий целевые элементы.
+* items - элементы у которых будут переключаться классы.
+* active - класс активного элемента
+* current - класс текущего элемента
+* first - убирать или нет классы первого элемента при полной прокрутке вверх
+*/
 
 export const scrollBasedToggle = (sticky, items, options = {}) => {
 	const current = options.current || 'current';
@@ -200,7 +238,6 @@ export const scrollBasedToggle = (sticky, items, options = {}) => {
 		window.addEventListener('scroll', () => classToggle(items, _wrapper, active));
 	}
 }
-
 
 /* 
 * Подменяет стантартный малоуправляемый html тег select 
@@ -280,7 +317,7 @@ export const selectTweaker = (items, name = 'select') => {
 /* 
 * По событию добавляет (переключает) класс у текущего блока 
 * и удаляет этот класс у всех соседних. Может обрабатывать 
-* несколько событик (click, hower и т.д.)
+* несколько событий (click, hower и т.д.)
 * 
 * @разметка
 * 
@@ -301,9 +338,9 @@ export const selectTweaker = (items, name = 'select') => {
 *
 * @вызов (с уточнением контекста):
 *
-import { makeAccordion } from "../../js/lib";
+import { roughAccordion } from "../../js/lib";
 document.querySelectorAll('.accordeon').forEach((accordeon) => {
-	makeAccordion(accordeon.querySelectorAll('.accordeon__head'), { 
+	roughAccordion(accordeon.querySelectorAll('.accordeon__head'), { 
 		events: 'click, mouseenter',
 		cls: 'active,
 		toggle: false
@@ -318,7 +355,7 @@ document.querySelectorAll('.accordeon').forEach((accordeon) => {
 */
 
 export const roughAccordion = (items, options = {}) => {
-	const name = options.name || 'opened';
+	const cls = options.cls || 'opened';
 	const events = options.events || 'click';
 	const toggle = options.toggle;
 	
@@ -326,20 +363,58 @@ export const roughAccordion = (items, options = {}) => {
 		items.forEach(item => {
 			item.addEventListener(event, function(e) {
 				e.stopPropagation();
-				items.forEach(item => (item != this) && item.classList.remove(`${name}`));
+				items.forEach(item => (item != this) && item.classList.remove(`${cls}`));
 			
-				if (this.classList != `${name}`)
-					this.classList[(toggle) ? 'toggle':'add'](`${name}`);
+				if (this.classList != `${cls}`)
+					this.classList[(toggle) ? 'toggle':'add'](`${cls}`);
 			});
 		});
 	});
 }
 
-
-/* Плавный аккордеон */
+/* 
+* По событию анимированно скрывает (показывает) по высоте, текущий 
+* элемент (добавляя ему класс при открытии) и скрывает все остальные 
+* элементы (убирая класс). Может обрабатывать несколько событий (click, hower и т.д.)
+* 
+* @разметка
+* 
+<div class="accordeon">
+	<div class="accordeon__item">
+		<h2 class="accordeon__head opened"></h2>
+		<div class="accordeon__block"></div>
+	</div>
+	<div class="accordeon__item">
+		<h2 class="accordeon__head"></h2>
+		<div class="accordeon__block"></div>
+	</div>
+	<div class="accordeon__item">
+		<h2 class="accordeon__head"></h2>
+		<div class="accordeon__block"></div>
+	</div>
+</div>
+*
+* @вызов (с уточнением контекста):
+*
+import { smoothAccordion } from "../../js/lib";
+document.querySelectorAll('.accordeon').forEach((accordeon) => {
+	smoothAccordion(accordeon.querySelectorAll('.accordeon__head'), { 
+		events: 'click, mouseenter',
+		cls: 'active,
+		toggle: false
+	});
+});
+*
+* @параметры вызова:
+*
+* cls - переключаемый класс
+* еvents - отслеживаемые события (строка, через запятую)
+* toggle - не просто добавлять, а переключать класс у текущего элемента 
+* duration - продолжительность анимационного эффекта
+*/
 
 export const smoothAccordion = function(items, options = {}) {
-	const name = options.name || 'opened';
+	const cls = options.cls || 'opened';
 	const events = options.events || 'click';
 	const duration = options.duration || 400;
 	const toggle = options.toggle;
@@ -352,22 +427,21 @@ export const smoothAccordion = function(items, options = {}) {
 				items.forEach(item => {
 					if (item != this) {
 						slideUp(item.nextElementSibling, duration);
-						item.classList.remove(`${name}`);
+						item.classList.remove(`${cls}`);
 					}
 				});
 
 				if (toggle) {
 					slideToggle(item.nextElementSibling, duration);
-					this.classList.toggle(`${name}`);
+					this.classList.toggle(`${cls}`);
 				} else {
 					slideDown(item.nextElementSibling, duration);
-					this.classList.add(`${name}`);
+					this.classList.add(`${cls}`);
 				}
 			})
 		})
 	});
 }
-
 
 /* 
 * Простая галерея (например для детального вида продукта) 
@@ -720,5 +794,3 @@ export const makeModalFrame = function(options = {}) {
 		});
 	}
 }
-
-
