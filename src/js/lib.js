@@ -1,5 +1,46 @@
 /* ======== Вспомогательные функции ======== */
 
+
+// Проверка на объект (не массив)
+export const isObject = (item) => {
+	return (item && typeof item === 'object' && !Array.isArray(item));
+}
+
+
+//Слияние двух объектов с глубокой вложенностью
+export const mergeDeep = (target, ...sources) => {
+	if (!sources.length) return target;
+	const source = sources.shift();
+
+	if (isObject(target) && isObject(source)) {
+		for (const key in source) {
+			if (isObject(source[key])) {
+				if (!target[key]) Object.assign(target, {
+					[key]: {}
+				});
+				mergeDeep(target[key], source[key]);
+			} else {
+				Object.assign(target, {
+					[key]: source[key]
+				});
+			}
+		}
+	}
+	return mergeDeep(target, ...sources);
+}
+
+
+// Глубокое клонирование объекта
+export const cloneObj = (obj) => {
+	let newObj = {}
+ 
+	for (let prop in obj) {
+		newObj[prop] = (typeof obj[prop] !== 'object') ? obj[prop] : cloneObj(obj[prop]);
+	}
+	return newObj;
+}
+
+
 // Получить высоту скрытого элемента
 export const getHeight = (el) => {
 	if (!el) return;
@@ -118,20 +159,67 @@ export const slideToggle = (el, duration, cb) => {
 /* ======== Готовые решения ======== */
 
 /* 
+* Переключатель класса для мобильного меню. Отслеживает клик по заданным
+* кнопкам и переключает класс для заданного блока. Так же отслеживает клик
+* по страничке за пределами заданного блока.
+* 
+* @разметка
+* 
+<div class="menu">
+	<button class="menu__close"></button>
+	<a class="menu__item" href="./">One</a>
+	<a class="menu__item" href="./">Two</a>
+	<a class="menu__item" href="./">Three</a>
+</div>
+<button class="menu__toggle"></button>
+* 
+* @вызов
+* 
+import { menuToggle } from "../../js/lib";
+const menu = document.querySelector('.menu');
+const toggles = document.querySelectorAll('.menu__toggle, .menu__close');
+menuToggle(menu, toggles, 'opened');
+* 
+*/
+
+export const menuToggle = (menu, toggles, cls = 'opened') => {
+
+	if(!toggles || !menu) return;
+
+	toggles.forEach(item => {
+		item.addEventListener('click', (e) => {
+			e.preventDefault();
+			e.stopPropagation();
+			menu.classList.toggle(`${cls}`);
+		});
+	});
+
+	['click','touchstart'].forEach(event => {
+		document.addEventListener(event, function(e) {
+			if(menu.classList.contains(`${cls}`) && !e.target.closest(`.${menu.className.split(' ')[0]}`)) {
+				e.preventDefault();
+				menu.classList.remove(`${cls}`);
+			}
+		});
+	});
+}
+
+/* 
 * Упрощенный аналог wow.js. Отслеживает появление элемента снизу
 * в области просмотра браузера. Добавляет и (опционально)
 * убирает класс .active
 * 
 * @разметка:
 * 
-<div class="someblock" data-shift="2"></div>
-<div class="someblock" data-shift="2" data-repeat></div>
-<div class="someblock" data-shift="2" data-repeat></div>
+<div class="someblock" data-shift="-0.5"></div>
+<div class="someblock" data-shift="0" data-repeat></div>
+<div class="someblock" data-shift="0.5" data-repeat></div>
 * 
 * @параметры разметки: 
 * 
-* data-shift="2" - множитель показывающий на какую часть от своей 
-* высоты, должен показаться снизу элемент, чтобы добавился класс
+* data-shift="0.5" - множитель показывающий на какую часть от своей 
+* высоты, должен показаться снизу элемент, чтобы добавился класс.
+* Принимает положительные и отрицательные значения.
 * 
 * data-repeat - убирать класс, если элемент вновь уходит за нижндюю
 * границу браузера
@@ -139,20 +227,20 @@ export const slideToggle = (el, duration, cb) => {
 * @вызов:
 * 
 import { scrollClassToggle } from "../../js/lib";
-scrollClassToggle(document.querySelectorAll('.someblock'))
+scrollClassToggle(document.querySelectorAll('.someblock'), 'showed')
 */
 
-export const scrollClassToggle = (items) => {
+export const scrollClassToggle = (items, cls="active") => {
 	if (items.length) {
 		const classToggle = (item) => {
 			const repeat = item.dataset['repeat'] != undefined;
 			const box = item.getBoundingClientRect();
-			const shift = box.height/item.dataset['shift'] || 1;
+			const shift = box.height * item.dataset['shift'] || 0;
 			const over = box.bottom + shift > 0;
-			const under = box.bottom - shift - window.innerHeight < 0;
+			const under = box.bottom + shift - window.innerHeight < 0;
 	
-			if (repeat || !item.classList.contains('active'))
-				item.classList[(over && under) ? 'add': 'remove']('active');
+			if (repeat || !item.classList.contains(`${cls}`))
+				item.classList[(over && under) ? 'add': 'remove'](`${cls}`);
 		};
 		
 		[...items].forEach(item => {
@@ -342,7 +430,7 @@ import { roughAccordion } from "../../js/lib";
 document.querySelectorAll('.accordeon').forEach((accordeon) => {
 	roughAccordion(accordeon.querySelectorAll('.accordeon__head'), { 
 		events: 'click, mouseenter',
-		cls: 'active,
+		cls: 'active',
 		toggle: false
 	});
 });
@@ -727,33 +815,29 @@ import { addUnderlay, makeModalFrame } from "../../js/lib";
 addUnderlay('modal');
 makeModalFrame({ cls: 'modal' });
 * 
-* @вызов с передачей внешних скриптов:
+* @вызов с использованием внешних решений (передаются через callback функцию):
 * 
 import { addUnderlay, makeModalFrame } from "../../js/lib";
 import scrollLock from 'scroll-lock';
 import Inputmask from "inputmask";
 addUnderlay('modal');
-makeModalFrame({ 
-	cls: 'modal',
-	scrollLock,
-	Inputmask: Inputmask({
-		"mask": "+7 (999) 999-99-99", 
-		showMaskOnHover: false
-	})
+makeModalFrame({ el: '.some-el', cls: 'modal', scrollLock}, function() {
+	Inputmask({ "mask": "+7 (999) 999-99-99", showMaskOnHover: false });
+	Inputmask.mask(this.querySelectorAll('input[type="tel"]'));
 });
 */
 
-export const makeModalFrame = function(options = {}) {
-	const { scrollLock, Inputmask } = options;
+export const makeModalFrame = function(options = {}, cb) {
+	const { scrollLock } = options;
 	const cls = options.cls || 'modal';
+	const select = options.el || `[data-${cls}]`;
 
 	const modal = document.querySelector(`#${cls}__underlay`);
 	const body = modal.querySelector(`.${cls}__content`);
 	
 	if (modal) {
-		const close = function(e) {
-			e.preventDefault();
 
+		const close = function() {
 			if(typeof scrollLock !== 'undefined') {
 				scrollLock.clearQueueScrollLocks();
 				scrollLock.enablePageScroll();
@@ -761,36 +845,44 @@ export const makeModalFrame = function(options = {}) {
 
 			modal.className = `${cls}`;
 			modal.style.display = "none";
+
+			body.className = `${cls}__body`;
 			body.innerHTML = '';
 		}
-
-		const open = function(e) {
-			e.preventDefault();
-
-			if (getComputedStyle(modal).display !== 'none') 
-				close(e);
-
-			const id = e.currentTarget.dataset[`${cls}`] || 'error';
-			const content = (id == '#') ? e.currentTarget.innerHTML : document.querySelector('#' + id).innerHTML;
-
-			body.insertAdjacentHTML('beforeend', content);
+		
+		const open = function(el) {
+			const id = el.dataset[`${cls}`] || 'error';
+			const content = (id == '#') ? el.innerHTML : document.querySelector('#' + id).innerHTML;
+			
+			modal.className = `${cls}`;
 			modal.classList.add(id != '#' ? `${cls}_${id}`:`${cls}_self`);
 			modal.style.display = "block";
 
+			body.innerHTML = '';
+			body.className = `${cls}__content`;
+			body.insertAdjacentHTML('beforeend', content);
+
 			if(typeof scrollLock !== 'undefined')
 				scrollLock.disablePageScroll();
-			
-			if(typeof Inputmask !== 'undefined') 
-				Inputmask.mask(body.querySelectorAll('input[type="tel"]'));
+
+			if (typeof cb === 'function') 
+				return cb.call(body, el);
 		}
 
-		document.querySelectorAll(`[data-${cls}]`).forEach(item => {
-			item.addEventListener('click', open);
+		document.addEventListener('click', (e) => {
+			let el = e.target.closest(select);
+
+			if (el && el.dataset[`${cls}`]) {
+				e.preventDefault();
+				open(el);
+			}
 		});
 
 		document.addEventListener('click', (e) => {
-			if (e.target == modal || e.target.classList.contains(`${cls}__close`))
-				close(e);
+			if (e.target == modal || e.target.classList.contains(`${cls}__close`)) {
+				e.preventDefault();
+				close();
+			}
 		});
 	}
 }
