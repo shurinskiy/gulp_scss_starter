@@ -175,30 +175,56 @@ export const slideToggle = (el, duration, cb) => {
 * 
 * @вызов
 * 
+import scrollLock from 'scroll-lock';
 import { menuToggle } from "../../js/lib";
 const menu = document.querySelector('.menu');
 const toggles = document.querySelectorAll('.menu__toggle, .menu__close');
-menuToggle(menu, toggles, 'opened');
+menuToggle(menu, toggles,  {
+	scrollLock: scrollLock,
+	cls: 'opened'
+});
 * 
 */
 
-export const menuToggle = (menu, toggles, cls = 'opened') => {
-
+export const menuToggle = (menu, toggles, options = {}) => {
 	if(!toggles || !menu) return;
+	
+	const { scrollLock } = options;
+	const cls = options.cls || 'opened';
+	
+	const menuOpen = (e) => {
+		e.preventDefault();
+		e.stopPropagation();
+		menu.classList.add('opened');
 
-	toggles.forEach(item => {
-		item.addEventListener('click', (e) => {
-			e.preventDefault();
-			e.stopPropagation();
-			menu.classList.toggle(`${cls}`);
-		});
-	});
+		if(typeof scrollLock !== 'undefined') {
+			Object.assign(menu.style, { maxWidth: parseInt(getComputedStyle(menu).maxWidth) + scrollLock.getPageScrollBarWidth() + 'px' });
+			scrollLock.disablePageScroll();
+		}
+	}
+	
+	const menuClose = (e) => {
+		e.stopPropagation();
+		menu.classList.remove(`${cls}`);
+		menu.removeAttribute('style');
+		
+		if(typeof scrollLock !== 'undefined') {
+			scrollLock.clearQueueScrollLocks();
+			scrollLock.enablePageScroll();
+		}
+	}
 
 	['click','touchstart'].forEach(event => {
-		document.addEventListener(event, function(e) {
+		toggles.forEach(toggle => {
+			toggle.addEventListener(event, function(e) {
+				menu.classList.contains(`${cls}`) ? menuClose(e) : menuOpen(e);
+			});
+		});
+		
+		document.addEventListener(event, (e) => {
 			if(menu.classList.contains(`${cls}`) && !e.target.closest(`.${menu.className.split(' ')[0]}`)) {
 				e.preventDefault();
-				menu.classList.remove(`${cls}`);
+				menuClose(e);
 			}
 		});
 	});
@@ -230,7 +256,7 @@ import { scrollClassToggle } from "../../js/lib";
 scrollClassToggle(document.querySelectorAll('.someblock'), 'showed')
 */
 
-export const scrollClassToggle = (items, cls="active") => {
+export const scrollClassToggle = (items, cls = "active") => {
 	if (items.length) {
 		const classToggle = (item) => {
 			const repeat = item.dataset['repeat'] != undefined;
@@ -846,7 +872,7 @@ export const makeModalFrame = function(options = {}, cb) {
 			modal.className = `${cls}`;
 			modal.style.display = "none";
 
-			body.className = `${cls}__body`;
+			body.className = `${cls}__content`;
 			body.innerHTML = '';
 		}
 		
