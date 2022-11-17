@@ -159,6 +159,69 @@ export const slideToggle = (el, duration, cb) => {
 /* ======== Готовые решения ======== */
 
 /* 
+* Простая реализация табов, основанная на переключении классов.
+* При нажатии на кнопку заголовка, переключается класс у соответствующего
+* ей контентного блока.
+* 
+* @разметка
+* 
+<div class="tab">
+	<div class="tab__buttons">
+		<button class="tab__button active"></button>
+		<button class="tab__button"></button>
+		<button class="tab__button"></button>
+	</div>
+	<div class="tab__blocks">
+		<div class="tab__block active"></div>
+		<div class="tab__block"></div>
+		<div class="tab__block"></div>
+	</div>
+</div>
+* 
+* @вызов
+* 
+import { driveTabs } from "../../js/lib";
+driveTabs({
+	container: '.tab',
+	button: '.tab__button',
+	block: '.tab__block',
+	cls: 'active'
+}, function() {
+	console.log(this);
+});
+* 
+*/
+
+export const driveTabs = (options = {}, cb) => {
+	const containers = options.container || '.tab';
+	const button = options.button || `.${containers}__button`;
+	const block = options.block || `.${containers}__block`;
+	const cls = options.cls || 'active';
+
+	document.querySelectorAll(containers).forEach((container) => {
+		const buttons = container.querySelectorAll(button);
+		const blocks = container.querySelectorAll(block);
+
+		buttons.forEach((button, i) => {
+			button.addEventListener('click', (e) => {
+				if (! e.target.classList.contains(`${cls}`)) {
+					buttons.forEach((button, i) => {
+						button.classList.remove(`${cls}`);
+						blocks[i].classList.remove(`${cls}`);
+					});
+		
+					button.classList.add(`${cls}`);
+					blocks[i].classList.add(`${cls}`);
+	
+					if (typeof cb === 'function') 
+						return cb.call(blocks[i]);
+				}
+			});
+		});
+	});
+}
+
+/* 
 * Переключатель класса для мобильного меню. Отслеживает клик по заданным
 * кнопкам и переключает класс для заданного блока. Так же отслеживает клик
 * по страничке за пределами заданного блока.
@@ -895,20 +958,64 @@ export const makeModalFrame = function(options = {}, cb) {
 				return cb.call(body, el);
 		}
 
-		document.addEventListener('click', (e) => {
-			let el = e.target.closest(select);
+		if(this) {
+			open(this);
 
-			if (el && el.dataset[`${cls}`]) {
-				e.preventDefault();
-				open(el);
-			}
-		});
+		} else {
+			document.addEventListener('click', (e) => {
+				let el = e.target.closest(select);
+	
+				if (el && el.dataset[`${cls}`]) {
+					e.preventDefault();
+					open(el);
+				}
+			});
+		}
 
 		document.addEventListener('click', (e) => {
 			if (e.target == modal || e.target.classList.contains(`${cls}__close`)) {
 				e.preventDefault();
 				close();
 			}
+		});
+	}
+}
+
+/* 
+* Плавная прокрутка к заданному элементу 
+* @вызов:
+* 
+import { scrollToId } from "../../js/lib";
+scrollToId(document.querySelectorAll('a[href^="#"]'));
+* 
+*/
+
+export const scrollToId = (items) => {
+	items.forEach(item => {
+		item.addEventListener('click', (e) => {
+			e.preventDefault();
+			document.getElementById(item.getAttribute('href').substring(1)).scrollIntoView({
+				behavior: 'smooth',
+				block: 'start'
+			});
+		});
+	});		
+}
+
+/* 
+* Плавная прокрутка к верху страницы
+* @вызов:
+* 
+import { scrollToTop } from "../../js/lib";
+scrollToTop(document.querySelector('a[href^="top"]'));
+* 
+*/
+
+export const scrollToTop = (item) => {
+	if (item) {
+		item.addEventListener('click', (e) => {
+			e.preventDefault();
+			window.scrollTo({ top: 0, behavior: 'smooth' });
 		});
 	}
 }
