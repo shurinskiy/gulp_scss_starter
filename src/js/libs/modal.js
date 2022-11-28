@@ -62,16 +62,26 @@ import { addUnderlay, makeModalFrame } from "../../js/lib";
 import scrollLock from 'scroll-lock';
 import Inputmask from "inputmask";
 addUnderlay('modal');
-makeModalFrame({ el: '.some-el', cls: 'modal', scrollLock}, function() {
-	Inputmask({ "mask": "+7 (999) 999-99-99", showMaskOnHover: false });
-	Inputmask.mask(this.querySelectorAll('input[type="tel"]'));
+makeModalFrame({ 
+	el: '.some-el', 
+	cls: 'modal', 
+	scrollLock,
+	open: function() {
+		Inputmask({ 
+			"mask": "+7 (999) 999-99-99", 
+			showMaskOnHover: false 
+		}).mask(this.querySelectorAll('input[type="tel"]'));
+	},
+	close: function() {
+		// some code on close modal
+	}
 });
 */
 
-export const makeModalFrame = function(options = {}, cb) {
-	const { scrollLock } = options;
-	const cls = options.cls || 'modal';
-	const select = options.el || `[data-${cls}]`;
+export const makeModalFrame = function(props = {}) {
+	const { scrollLock } = props;
+	const cls = props.cls || 'modal';
+	const select = props.el || `[data-${cls}]`;
 
 	const modal = document.querySelector(`#${cls}__underlay`);
 	const body = modal.querySelector(`.${cls}__content`);
@@ -83,12 +93,15 @@ export const makeModalFrame = function(options = {}, cb) {
 				scrollLock.clearQueueScrollLocks();
 				scrollLock.enablePageScroll();
 			}
-
+			
 			modal.className = `${cls}`;
 			modal.style.display = "none";
-
+			
 			body.className = `${cls}__content`;
 			body.innerHTML = '';
+
+			if (typeof props.close === 'function') 
+				return props.close.call(body);
 		}
 		
 		const open = function(el) {
@@ -106,8 +119,8 @@ export const makeModalFrame = function(options = {}, cb) {
 			if(typeof scrollLock !== 'undefined')
 				scrollLock.disablePageScroll();
 
-			if (typeof cb === 'function') 
-				return cb.call(body, el);
+			if (typeof props.open === 'function') 
+				return props.open.call(body, el);
 		}
 
 		if(this) {
@@ -116,7 +129,7 @@ export const makeModalFrame = function(options = {}, cb) {
 		} else {
 			document.addEventListener('click', (e) => {
 				let el = e.target.closest(select);
-	
+				
 				if (el && el.dataset[`${cls}`]) {
 					e.preventDefault();
 					open(el);
