@@ -12,7 +12,7 @@ import "./blocks.js";
 }(Element.prototype));
 
 (function(e) {
-	var matches = e.matches || e.matchesSelector || e.webkitMatchesSelector || e.mozMatchesSelector || e.msMatchesSelector || e.oMatchesSelector;
+	let matches = e.matches || e.matchesSelector || e.webkitMatchesSelector || e.mozMatchesSelector || e.msMatchesSelector || e.oMatchesSelector;
 	!matches ? (e.matches = e.matchesSelector = function matches(selector) {
 		let matches = document.querySelectorAll(selector);
 		let th = this;

@@ -4,7 +4,7 @@
 * загрузки, определяется свойством transition-duration у 
 * элемента-обертки (надо задавать в стилях вручную).
 * 
-* @требуемая html структура:
+* @требуемая разметка:
 * <div class="preloader">
 * 	<div class="preloader__counter"></div>
 * 	<div class="preloader__progress"></div>
@@ -26,7 +26,7 @@ export const preloadingBar = (options = {}) => {
 	const _counter = document.querySelector(`.${cls}__counter`);
 	const _progress = document.querySelector(`.${cls}__progress`);
 
-	if (!_wrapper || !_counter) return;
+	if (!_wrapper) return;
 
 	const getImages = () => {
 		area.querySelectorAll('*:not(script)').forEach((tag) => {

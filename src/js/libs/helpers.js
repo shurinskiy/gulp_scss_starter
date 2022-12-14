@@ -41,6 +41,22 @@ export const cloneObj = (obj) => {
 }
 
 
+// Отложить вызов функции
+export const throttle = (fn, delay) => {
+	let inProgress = false;
+	return (...args) => {
+		if (inProgress) {
+			return;
+		}
+		inProgress = true;
+		setTimeout(() => {
+			fn(...args); // Consider moving this line before the set timeout if you want the very first one to be immediate
+			inProgress = false;
+		}, delay);
+	}
+}
+
+
 // Полная загрузка документа
 export const documentReady = function (cb) {
 	if (document.attachEvent ? document.readyState === "complete" : document.readyState !== "loading") {

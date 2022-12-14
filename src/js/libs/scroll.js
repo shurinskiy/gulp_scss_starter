@@ -17,7 +17,7 @@
 * 
 * @вызов:
 * 
-import { scrollBasedToggle } from "../../js/lib";
+import { scrollBasedToggle } from "../../js/libs/scroll";
 const sticky = document.querySelector('.scroll__items');
 const items = sticky?.querySelectorAll('.scroll__item');
 
@@ -97,7 +97,7 @@ export const scrollBasedToggle = (sticky, items, options = {}) => {
 * 
 * @вызов:
 * 
-import { scrollClassToggle } from "../../js/lib";
+import { scrollClassToggle } from "../../js/libs/scroll";
 scrollClassToggle(document.querySelectorAll('.someblock'), 'showed')
 */
 
@@ -161,7 +161,7 @@ export const scrollClassToggle = (items, cls = "active") => {
 * 
 * @вызов
 * 
-import { makeParallax } from "../../js/lib";
+import { makeParallax } from "../../js/libs/scroll";
 makeParallax(document.querySelectorAll('.someblock'));
 * 
 * @параметры вызова:

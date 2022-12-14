@@ -29,14 +29,16 @@
 * 
 * @вызов:
 * 
-import { selectTweaker } from "../../js/lib";
+import { selectTweaker } from "../../js/libs/selectTweaker";
 selectTweaker(document.querySelectorAll('.someblock__select'));
 */
 
 export const selectTweaker = (items, name = 'select') => {
 
-	for (let i = 0; i < items.length; i++) {
-		const select = items[i];
+	[...items].forEach((select, i) => {
+		console.log(select.style.display);
+
+		const previous = select.previousElementSibling;
 		const options = select.querySelectorAll('option');
 		const _wrapper = document.createElement('div');
 		const _head = document.createElement('div');
@@ -45,19 +47,20 @@ export const selectTweaker = (items, name = 'select') => {
 		_wrapper.className = `${select.className} ${name}`;
 		_head.className = `${name}__head`;
 		_list.className = `${name}__list`;
-
+	
 		select.style.display = 'none';
 		select.removeAttribute('class');
-		select.parentNode.append(_wrapper);
+		
+		(previous) ? previous.after(_wrapper) : select.parentNode.prepend(_wrapper);
 		_wrapper.append(select, _head, _list);
 		
 		_head.textContent = options[0].textContent;
 		_head.addEventListener('click', () => _wrapper.classList.toggle(`${name}_opened`));
-
+	
 		for (let k = 0; k < options.length; k++) {
 			_list.insertAdjacentHTML('beforeend', `<li class="${name}__item" data-value="${options[k].value}">${options[k].text}</li>`);
 		}
-
+	
 		[..._list.children].forEach( item => {
 			item.addEventListener('click', () => {
 				_wrapper.classList.remove(`${name}_opened`);
@@ -65,10 +68,10 @@ export const selectTweaker = (items, name = 'select') => {
 				select.value = item.getAttribute('data-value');
 			});
 		});
-
+	
 		document.addEventListener('mouseup', e => { 
 			if (!_wrapper.contains(e.target)) 
 				_wrapper.classList.remove(`${name}_opened`);
 		});
-	}
+	});
 }

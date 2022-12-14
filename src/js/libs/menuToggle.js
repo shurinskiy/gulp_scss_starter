@@ -20,17 +20,23 @@ import { menuToggle } from "../../js/lib";
 const menu = document.querySelector('.menu');
 const toggles = document.querySelectorAll('.menu__toggle, .menu__close');
 menuToggle(menu, toggles,  {
-	scrollLock: scrollLock,
-	cls: 'opened'
+	scrollLock,
+	cls: 'opened',
+	open: function() {
+		console.log(this)
+	},
+	close: function() {
+		...
+	}
 });
 * 
 */
 
-export const menuToggle = (menu, toggles, options = {}) => {
+export const menuToggle = (menu, toggles, props = {}) => {
 	if(!toggles || !menu) return;
 	
-	const { scrollLock } = options;
-	const cls = options.cls || 'opened';
+	const { scrollLock } = props;
+	const cls = props.cls || 'opened';
 	
 	const menuOpen = (e) => {
 		e.preventDefault();
@@ -41,6 +47,9 @@ export const menuToggle = (menu, toggles, options = {}) => {
 			Object.assign(menu.style, { maxWidth: parseInt(getComputedStyle(menu).maxWidth) + scrollLock.getPageScrollBarWidth() + 'px' });
 			scrollLock.disablePageScroll();
 		}
+
+		if (typeof props.open === 'function') 
+			return props.open.call(menu);
 	}
 	
 	const menuClose = (e) => {
@@ -52,20 +61,23 @@ export const menuToggle = (menu, toggles, options = {}) => {
 			scrollLock.clearQueueScrollLocks();
 			scrollLock.enablePageScroll();
 		}
+
+		if (typeof props.close === 'function') 
+			return props.close.call(menu);
 	}
 
-	['click','touchstart'].forEach(event => {
-		toggles.forEach(toggle => {
-			toggle.addEventListener(event, function(e) {
-				menu.classList.contains(`${cls}`) ? menuClose(e) : menuOpen(e);
-			});
+	toggles.forEach(toggle => {
+		toggle.addEventListener('click', function(e) {
+			menu.classList.contains(`${cls}`) ? menuClose(e) : menuOpen(e);
 		});
-		
+	});
+
+	['click','touchend'].forEach(event => {
 		document.addEventListener(event, (e) => {
 			if(menu.classList.contains(`${cls}`) && !e.target.closest(`.${menu.className.split(' ')[0]}`)) {
 				e.preventDefault();
 				menuClose(e);
 			}
-		});
+		}, true);
 	});
 }
