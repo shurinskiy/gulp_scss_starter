@@ -44,92 +44,117 @@
 * 
 import { makeGallery } from "../../js/lib";
 makeGallery(document.querySelectorAll('.someblock'), { 
-	cls: gallery,
+	class: gallery,
 	navigation: true 
 });
 * 
 * @параметры вызова:
 * 
-* cls - имя класса галереи в динамически создаваемой разметке
+* class - имя класса галереи в динамически создаваемой разметке
+* thumbnails - блок кликабельных превьюшек, под галереей
 * navigation - включение дополнительной стрелочной навигации
 */
 
 export const makeGallery = (items, options = {}) => {
-	const cls = options.cls || 'gallery';
-	const navigation = options.navigation;
+	class Gallery {
+		constructor(item, options) {
+			if(!item || !item instanceof Element) return;
 
-	for (let i = 0; i < items.length; i++) {
-		const frame = items[i];
-		const images = frame.querySelectorAll('img');
-		const _wrapper = document.createElement('div');
-		const _thumbs = document.createElement('div');
-		
-		_wrapper.className = `${frame.className} ${cls}`;
-		_thumbs.className = `${cls}__thumbs`;
-		frame.className = `${cls}__frame`;
-		
-		for (let j = 0; j < images.length; j++) {
-			let active = j ? '':'active';
-			let _image = document.createElement('div');
-			let _thumb = document.createElement('span');
-			_image.className = `${cls}__image ${active}`;
-			_thumb.className = `${cls}__thumb ${active}`;
-			_thumb.style.backgroundImage = `url(${images[j].src})`;
-			frame.append(_image);
-			_image.append(images[j]);
-			_thumbs.append(_thumb);
+			this.options = {
+				class: 'gallery',
+				navigation: false,
+				thumbnails: true,
+				...options
+			};
+
+			this.$frame = item;
+			this.$images = this.$frame.querySelectorAll('img');
+			this.$wrapper = document.createElement('div');
+			this.$thumbs = document.createElement('div');
+			this.$prev = document.createElement('button');
+			this.$next = document.createElement('button');
+
+			this.render();
+			this.$wrapper.addEventListener('click', (e) => this.clickHandler(e));
 		}
+		
+		render() {
+			this.$wrapper.className = `${this.$frame.className} ${this.options.class}`;
+			this.$thumbs.className = `${this.options.class}__thumbs`;
+			this.$frame.className = `${this.options.class}__frame`;
 
-		frame.parentNode.append(_wrapper);
-		_wrapper.append(frame, _thumbs);
-
-		if (navigation) {
-			const _prev = document.createElement('button');
-			const _next = document.createElement('button');
-			_prev.className = `${cls}__prev`;
-			_next.className = `${cls}__next`;
-			_wrapper.append(_prev, _next);
-		}
-
-		_wrapper.addEventListener('click', function(e) {
-			// индекс активного слайда
-			let currentActive = [...images].findIndex(el => el.parentNode.classList.contains('active'));
-
-			// убрать класс "active" у всех слайдов и у всех превьюшек
-			let clearActive = () => {
-				[...images].map((el) => { el.parentNode.classList.remove('active') });
-				[..._thumbs.children].map((el) => { el.classList.remove('active') });
-			}
-
-			// сдвинуть индекс активного слайда в заданном направлении
-			let moveActive = (direction) => {
-				clearActive();
-				currentActive += direction;
-
-				if (currentActive >= images.length) {
-					currentActive = 0;
-				} else if(currentActive < 0) {
-					currentActive = images.length - 1;
+			this.$images.forEach((item, i) => {
+				let active = i ? '':'active';
+				let $image = document.createElement('div');
+				$image.className = `${this.options.class}__image ${active}`;
+				this.$frame.append($image);
+				$image.append(item);
+		
+				if(this.options.thumbnails) {
+					let $thumb = document.createElement('span');
+					$thumb.className = `${this.options.class}__thumb ${active}`;
+					$thumb.style.backgroundImage = `url(${item.src})`;
+					this.$thumbs.append($thumb);
 				}
+			});
 
-				images[currentActive].parentNode.classList.add('active')
-				_thumbs.children[currentActive].classList.add('active');
+			this.$frame.parentNode.append(this.$wrapper);
+			this.$wrapper.append(this.$frame);
+			
+			if(this.options.thumbnails) {
+				this.$wrapper.append(this.$thumbs);
 			}
 
+			if (this.options.navigation) {
+				const $prev = document.createElement('button');
+				const $next = document.createElement('button');
+				$prev.className = `${this.options.class}__prev`;
+				$next.className = `${this.options.class}__next`;
+				this.$frame.append($prev, $next);
+			}
+		}
+
+		clearActive() {
+			[...this.$images].map((el) => { el.parentNode.classList.remove('active') });
+			[...this.$thumbs.children].map((el) => { el.classList.remove('active') });
+		}
+
+		moveActive(direction = 1) {
+			let currentActive = [...this.$images].findIndex(el => el.parentNode.classList.contains('active'));
+			this.clearActive();
+			currentActive += direction;
+
+			if (currentActive >= this.$images.length) {
+				currentActive = 0;
+			} else if(currentActive < 0) {
+				currentActive = this.$images.length - 1;
+			}
+
+			this.$images[currentActive].parentNode.classList.add('active')
+			this.$thumbs.children[currentActive]?.classList.add('active');
+		}
+
+		clickHandler(e) {
 			// если клик по превьюшке
-			if(e.target.classList.contains(`${cls}__thumb`)) {
-				clearActive();
-				images[[..._thumbs.children].findIndex(el => el == e.target)].parentNode.classList.add('active');
+			if(e.target.classList.contains(`${this.options.class}__thumb`)) {
+				this.clearActive();
+				this.$images[[...this.$thumbs.children].findIndex(el => el == e.target)].parentNode.classList.add('active');
 				e.target.classList.add('active');
 			}
 
 			// если клик по кнопке "prev"
-			if (e.target.classList.contains(`${cls}__prev`))
-				moveActive(-1);
+			if (e.target.classList.contains(`${this.options.class}__prev`))
+				this.moveActive(-1);
 
 			// если клик по кнопке "next"
-			if (e.target.classList.contains(`${cls}__next`))
-				moveActive(1);
-		});
+			if (e.target.classList.contains(`${this.options.class}__next`))
+				this.moveActive(1);
+		}
+	}
+
+	if(items instanceof NodeList) {
+		items.forEach((item) => new Gallery(item, options));
+	} else {
+		return new Gallery(items, options);
 	}
 }

@@ -20,7 +20,7 @@
 * 
 * @вызов
 * 
-import { driveTabs } from "../../js/lib";
+import { driveTabs } from "../../js/libs/driveTabs";
 driveTabs({
 	container: '.tab',
 	button: '.tab__button',

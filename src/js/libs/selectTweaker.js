@@ -36,14 +36,16 @@ selectTweaker(document.querySelectorAll('.someblock__select'));
 export const selectTweaker = (items, name = 'select') => {
 
 	[...items].forEach((select, i) => {
-		console.log(select.style.display);
 
 		const previous = select.previousElementSibling;
 		const options = select.querySelectorAll('option');
 		const _wrapper = document.createElement('div');
 		const _head = document.createElement('div');
 		const _list = document.createElement('ul');
-		
+
+		for(let data in select.dataset)
+			_wrapper.dataset[`${data}`] = select.dataset[data];
+
 		_wrapper.className = `${select.className} ${name}`;
 		_head.className = `${name}__head`;
 		_list.className = `${name}__list`;

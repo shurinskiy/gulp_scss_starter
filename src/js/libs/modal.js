@@ -1,44 +1,4 @@
 /* 
-* Вспомогательная функция создающая подложку для будущего 
-* использования с модальным окном и т.п. Подложка добавляется
-* в конце тега body текущей странички
-*
-* @результирующая структура:
-*
-* <div class="modal" id="modal__underlay" data-scroll-lock-scrollable="">
-* 	<div class="modal__body">
-* 		<span class="modal__close"></span>
-* 		<div class="modal__content"></div>
-* 	</div>
-* </div>
-*
-* @вызов:
-*
-addUnderlay('modal');
-*/
-
-export const addUnderlay = (cls = 'modal') => {
-	if(! document.querySelector(`#${cls}__underlay`)) {
-		const _underlay = document.createElement('div');
-		const _body = document.createElement('div');
-		const _close = document.createElement('span');
-		const _content = document.createElement('div');
-		
-		_underlay.className = `${cls}`;
-		_underlay.id = `${cls}__underlay`;
-		_underlay.setAttribute('data-scroll-lock-scrollable', '');
-		_body.className = `${cls}__body`;
-		_close.className = `${cls}__close`;
-		_content.className = `${cls}__content`;
-
-		_body.append(_close);
-		_body.append(_content);
-		_underlay.append(_body);
-		document.body.append(_underlay);
-	}
-}
-
-/* 
 * Простое модальное окно. Слушает элементы имеющие data-атрибут с 
 * именем укзанным в параметре cls при вызове. При клике по такому
 * элементу либо находит блок, по id указанному в значении data-атрибута,
@@ -52,9 +12,8 @@ export const addUnderlay = (cls = 'modal') => {
 * 
 * @вызов:
 * 
-import { addUnderlay, makeModalFrame } from "../../js/lib";
-addUnderlay('modal');
-makeModalFrame({ cls: 'modal' });
+import { makeModalFrame } from "../../js/lib";
+makeModalFrame({ class: 'modal' });
 * 
 * @вызов с использованием внешних решений (передаются через callback функцию):
 * 
@@ -63,10 +22,10 @@ import scrollLock from 'scroll-lock';
 import Inputmask from "inputmask";
 addUnderlay('modal');
 makeModalFrame({ 
-	el: '.some-el', 
-	cls: 'modal', 
+	select: '.some-el', 
+	class: 'modal', 
 	scrollLock,
-	open: function() {
+	open: function(modal) {
 		Inputmask({ 
 			"mask": "+7 (999) 999-99-99", 
 			showMaskOnHover: false 
@@ -79,69 +38,103 @@ makeModalFrame({
 */
 
 export const makeModalFrame = function(props = {}) {
-	const { scrollLock } = props;
-	const cls = props.cls || 'modal';
-	const select = props.el || `[data-${cls}]`;
+	class Modal {
+		constructor(props) {
+			this.props = {
+				class: 'modal',
+				...props
+			};
 
-	const modal = document.querySelector(`#${cls}__underlay`);
-	const body = modal.querySelector(`.${cls}__content`);
-	
-	if (modal) {
+			this.select = this.props.select ?? `[data-${this.props.class}]`;
+			this.modal = document.querySelector(`#${this.props.class}__underlay`);
+			this.body = document.querySelector(`.${this.props.class}__content`);
+			this.scrollLock = (typeof this.props.scrollLock !== 'undefined') && this.props.scrollLock;
+		
+			this._init();
+		}
 
-		const close = function() {
-			if(typeof scrollLock !== 'undefined') {
-				scrollLock.clearQueueScrollLocks();
-				scrollLock.enablePageScroll();
+		close() {
+			if(this.scrollLock) {
+				this.scrollLock.clearQueueScrollLocks();
+				this.scrollLock.enablePageScroll();
 			}
 			
-			modal.className = `${cls}`;
-			modal.style.display = "none";
+			this.modal.className = `${this.props.class}`;
+			this.modal.style.display = "none";
 			
-			body.className = `${cls}__content`;
-			body.innerHTML = '';
+			this.body.className = `${this.props.class}__content`;
+			this.body.innerHTML = '';
 
-			if (typeof props.close === 'function') 
-				return props.close.call(body);
-		}
-		
-		const open = function(el) {
-			const id = el.dataset[`${cls}`] || 'error';
-			const content = (id == '#') ? el.innerHTML : document.querySelector('#' + id).innerHTML;
-			
-			modal.className = `${cls}`;
-			modal.classList.add(id != '#' ? `${cls}_${id}`:`${cls}_self`);
-			modal.style.display = "block";
-
-			body.innerHTML = '';
-			body.className = `${cls}__content`;
-			body.insertAdjacentHTML('beforeend', content);
-
-			if(typeof scrollLock !== 'undefined')
-				scrollLock.disablePageScroll();
-
-			if (typeof props.open === 'function') 
-				return props.open.call(body, el);
+			if (typeof this.props.close === 'function') 
+				return this.props.close.call(this.body);
 		}
 
-		if(this) {
-			open(this);
+		open(el) {
+			const id = el.dataset[`${this.props.class}`] || 'error';
+			const content = (id == '#') ? el.innerHTML : document.querySelector('#' + id)?.innerHTML;
+			
+			this.modal.className = `${this.props.class}`;
+			this.modal.classList.add(id != '#' ? `${this.props.class}_${id}`:`${this.props.class}_self`);
+			this.modal.style.display = "block";
 
-		} else {
-			document.addEventListener('click', (e) => {
-				let el = e.target.closest(select);
+			this.body.innerHTML = '';
+			this.body.className = `${this.props.class}__content`;
+			this.body.insertAdjacentHTML('beforeend', content ?? '');
+
+			if(this.scrollLock)
+				this.scrollLock.disablePageScroll();
+
+			if (typeof this.props.open === 'function') 
+				return this.props.open.call(this.body, this);
+		}
+
+		_underlay() {
+			if (! document.querySelector(`#${this.props.class}__underlay`)) {
+				const underlay = document.createElement('div');
+				const body = document.createElement('div');
+				const close = document.createElement('span');
+				const content = document.createElement('div');
 				
-				if (el && el.dataset[`${cls}`]) {
+				underlay.className = `${this.props.class}`;
+				underlay.id = `${this.props.class}__underlay`;
+
+				if(this.scrollLock)
+					underlay.setAttribute('data-scroll-lock-scrollable', '');
+	
+				body.className = `${this.props.class}__body`;
+				close.className = `${this.props.class}__close`;
+				content.className = `${this.props.class}__content`;
+		
+				body.append(close);
+				body.append(content);
+				underlay.append(body);
+				document.body.append(underlay);
+	
+				this.modal = underlay;
+				this.body = content;
+			}
+		}
+
+		_init() {
+			this._underlay();
+
+			document.addEventListener('click', (e) => {
+				let el = e.target.closest(this.select);
+				
+				if (el && el.dataset[`${this.props.class}`]) {
 					e.preventDefault();
-					open(el);
+					this.open(el);
+				}
+			});
+
+			document.addEventListener('click', (e) => {
+				if (e.target == this.modal || e.target.classList.contains(`${this.props.class}__close`)) {
+					e.preventDefault();
+					this.close();
 				}
 			});
 		}
-
-		document.addEventListener('click', (e) => {
-			if (e.target == modal || e.target.classList.contains(`${cls}__close`)) {
-				e.preventDefault();
-				close();
-			}
-		});
 	}
+
+	return new Modal(props);
 }
