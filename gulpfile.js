@@ -26,7 +26,7 @@ let webconf = {
 		jquery: 'jQuery'
 	},
 	mode: isDev ? 'development' : 'production',
-	devtool: isDev ? 'eval-source-map' : 'none'
+	devtool: isDev ? 'eval-source-map' : false
 };
 
 let pth = {
