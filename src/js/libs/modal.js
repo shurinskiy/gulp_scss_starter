@@ -1,11 +1,15 @@
 /* 
-* Простое модальное окно. Слушает элементы имеющие data-атрибут с 
-* именем укзанным в параметре cls при вызове. При клике по такому
-* элементу либо находит блок, по id указанному в значении data-атрибута,
-* либо, если в значении data-атрибута указана #, берет внутренний html этого 
-* элемента и выводит в модальном окне. Может работать с внешними 
-* скриптами (scrollLock, Inputmask), если они переданы в качестве
-* параметров при вызове.
+* Простое модальное окно. Слушает элементы имеющие data-атрибут с именем 
+* укзанным в параметре cls при вызове (по умолчанию 'modal'). Выборка элементов 
+* для прослушиваения, может уточняться параметром select при вызове. При клике по 
+* такому элементу либо находит блок, по id указанному в значении data-атрибута,
+* либо, если в значении data-атрибута указана # (удобно для увеличения изображения, 
+* например), берет внутренний html этого элемента и выводит в модальном окне. 
+* Если элемент содержит атрибут rel, скрипт ожидает, что внутри будет изображение, 
+* ищет другие изображения, обернутые в элемент содержащий атрибут rel с таким же 
+* значением, и создает внутри текущего окна, из этих изображений, галерею с навигацией. 
+* Может работать с внешними скриптом для блокировки прокрутки документа (scrollLock), 
+* если ссылка на него передана в качестве параметра при вызове.
 * 
 * @элемент для прослушивания:
 * <span data-modal="someblock"></span>
@@ -35,6 +39,18 @@ makeModalFrame({
 		// some code on close modal
 	}
 });
+* 
+* @структура html для создания галлереи:
+* 
+<div data-modal="#" rel="gallery">
+	<img src="./images/someimage-1.png" alt="" />
+</div>
+<div data-modal="#" rel="gallery">
+	<img src="./images/someimage-2.png" alt="" />
+</div>
+<div data-modal="#" rel="gallery">
+	<img src="./images/someimage-3.png" alt="" />
+</div>
 */
 
 export const makeModalFrame = function(props = {}) {
@@ -42,6 +58,8 @@ export const makeModalFrame = function(props = {}) {
 		constructor(props) {
 			this.props = {
 				class: 'modal',
+				slideshowClassMod: 'slideshow',
+				slideshowClassActive: 'active',
 				...props
 			};
 
@@ -64,6 +82,7 @@ export const makeModalFrame = function(props = {}) {
 			
 			this.body.className = `${this.props.class}__content`;
 			this.body.innerHTML = '';
+			delete this.cnt, this.images;
 
 			if (typeof this.props.close === 'function') 
 				return this.props.close.call(this.body);
@@ -76,16 +95,59 @@ export const makeModalFrame = function(props = {}) {
 			this.modal.className = `${this.props.class}`;
 			this.modal.classList.add(id != '#' ? `${this.props.class}_${id}`:`${this.props.class}_self`);
 			this.modal.style.display = "block";
-
+			
 			this.body.innerHTML = '';
 			this.body.className = `${this.props.class}__content`;
 			this.body.insertAdjacentHTML('beforeend', content ?? '');
+			
+			this._slideshow(el.attributes.rel?.value);
 
 			if(this.scrollLock)
 				this.scrollLock.disablePageScroll();
 
 			if (typeof this.props.open === 'function') 
 				return this.props.open.call(this.body, this);
+		}
+						
+		move(direction = 1) {
+			this.images[this.cnt].classList.remove(`${this.props.slideshowClassActive}`);
+			this.cnt += direction;
+			
+			if (this.cnt < 0) { this.cnt = this.images.length - 1; }
+			else if (this.cnt >= this.images.length) { this.cnt = 0; }
+			
+			this.images[this.cnt].classList.add(`${this.props.slideshowClassActive}`);
+		}
+
+		_slideshow(rel) {
+			if (! rel) return;
+			const current = this.body.querySelector('img');
+			const images_related = document.querySelectorAll(`[rel="${rel}"] img`);
+			const images_cleared = [...images_related].filter(image => !image.isEqualNode(current));
+
+			this.body.classList.add(`${this.props.class}__content_${this.props.slideshowClassMod}`);
+			current.classList.add(`${this.props.slideshowClassActive}`);
+			images_cleared.map(image => { this.body.appendChild(image.cloneNode()) });
+
+			if (images_cleared) {
+				const _prev = document.createElement('button');
+				const _next = document.createElement('button');
+				this.images = this.body.querySelectorAll('img');
+				this.cnt = 0;
+	
+				_prev.className = `${this.props.class}__prev`;
+				_next.className = `${this.props.class}__next`;
+	
+				this.body.append(_prev);
+				this.body.append(_next);
+	
+				_prev.addEventListener('click', () => this.move(-1));
+				_next.addEventListener('click', () => this.move());
+	
+				this.images.forEach(image => {
+					image.addEventListener('click', () => { this.move() });
+				});
+			}
 		}
 
 		_underlay() {
@@ -125,9 +187,7 @@ export const makeModalFrame = function(props = {}) {
 					e.preventDefault();
 					this.open(el);
 				}
-			});
 
-			document.addEventListener('click', (e) => {
 				if (e.target == this.modal || e.target.classList.contains(`${this.props.class}__close`)) {
 					e.preventDefault();
 					this.close();
