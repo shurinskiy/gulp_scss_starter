@@ -209,6 +209,7 @@ $images-path: "images/";
 
 // общий сброс элемента
 %reset-input {
+	font-size: #{$basesize}px;
 	box-sizing: border-box;
 	vertical-align: middle;
 	display: inline-block;

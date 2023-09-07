@@ -65,8 +65,11 @@ export const makeModalFrame = function(props = {}) {
 
 			this.select = this.props.select ?? `[data-${this.props.class}]`;
 			this.modal = document.querySelector(`#${this.props.class}__underlay`);
-			this.body = document.querySelector(`.${this.props.class}__content`);
+			this.body = document.querySelector(`.${this.props.class}__body`);
+			this.content = document.querySelector(`.${this.props.class}__content`);
+			this.navi = document.querySelector(`.${this.props.class}__navi`);
 			this.scrollLock = (typeof this.props.scrollLock !== 'undefined') && this.props.scrollLock;
+			this.slideshow = false;
 		
 			this._init();
 		}
@@ -80,12 +83,13 @@ export const makeModalFrame = function(props = {}) {
 			this.modal.className = `${this.props.class}`;
 			this.modal.style.display = "none";
 			
-			this.body.className = `${this.props.class}__content`;
-			this.body.innerHTML = '';
-			delete this.cnt, this.images;
+			this.content.className = `${this.props.class}__content`;
+			this.content.innerHTML = '';
+			this.navi?.remove();
+			delete this.cnt, this.items;
 
 			if (typeof this.props.close === 'function') 
-				return this.props.close.call(this.body);
+				return this.props.close.call(this.content);
 		}
 
 		open(el) {
@@ -96,9 +100,9 @@ export const makeModalFrame = function(props = {}) {
 			this.modal.classList.add(id != '#' ? `${this.props.class}_${id}`:`${this.props.class}_self`);
 			this.modal.style.display = "block";
 			
-			this.body.innerHTML = '';
-			this.body.className = `${this.props.class}__content`;
-			this.body.insertAdjacentHTML('beforeend', content ?? '');
+			this.content.innerHTML = '';
+			this.content.className = `${this.props.class}__content`;
+			this.content.insertAdjacentHTML('beforeend', content ?? '');
 			
 			this._slideshow(el.attributes.rel?.value);
 
@@ -106,47 +110,59 @@ export const makeModalFrame = function(props = {}) {
 				this.scrollLock.disablePageScroll();
 
 			if (typeof this.props.open === 'function') 
-				return this.props.open.call(this.body, this);
+				return this.props.open.call(this.content, this, el);
 		}
 						
 		move(direction = 1) {
-			this.images[this.cnt].classList.remove(`${this.props.slideshowClassActive}`);
+			this.items[this.cnt].classList.remove(`${this.props.slideshowClassActive}`);
 			this.cnt += direction;
 			
-			if (this.cnt < 0) { this.cnt = this.images.length - 1; }
-			else if (this.cnt >= this.images.length) { this.cnt = 0; }
+			if (this.cnt < 0) { this.cnt = this.items.length - 1; }
+			else if (this.cnt >= this.items.length) { this.cnt = 0; }
 			
-			this.images[this.cnt].classList.add(`${this.props.slideshowClassActive}`);
+			this.items[this.cnt].classList.add(`${this.props.slideshowClassActive}`);
+
+			if (typeof this.props.move === 'function') 
+				return this.props.move.call(this.content, this);
 		}
 
 		_slideshow(rel) {
 			if (! rel) return;
-			const current = this.body.querySelector('img');
-			const images_related = document.querySelectorAll(`[rel="${rel}"] img`);
-			const images_cleared = [...images_related].filter(image => !image.isEqualNode(current));
+			const current = this.content.querySelector('img, video');
+			const items_related = document.querySelectorAll(`[rel="${rel}"] img, [rel="${rel}"] video`);
+			const items_cleared = [...items_related].filter(item => item.src !== current.src);
 
-			this.body.classList.add(`${this.props.class}__content_${this.props.slideshowClassMod}`);
+			this.content.classList.add(`${this.props.class}__content_${this.props.slideshowClassMod}`);
 			current.classList.add(`${this.props.slideshowClassActive}`);
-			images_cleared.map(image => { this.body.appendChild(image.cloneNode()) });
+			items_cleared.map(item => { this.content.appendChild(item.cloneNode()) });
 
-			if (images_cleared) {
-				const _prev = document.createElement('button');
-				const _next = document.createElement('button');
-				this.images = this.body.querySelectorAll('img');
+			if (items_cleared) {
+				const navi = document.createElement('div');
+				const prev = document.createElement('button');
+				const next = document.createElement('button');
+				this.items = this.content.querySelectorAll('img, video');
 				this.cnt = 0;
 	
-				_prev.className = `${this.props.class}__prev`;
-				_next.className = `${this.props.class}__next`;
+				navi.className = `${this.props.class}__navi`;
+				prev.className = `${this.props.class}__prev`;
+				next.className = `${this.props.class}__next`;
 	
-				this.body.append(_prev);
-				this.body.append(_next);
+				navi.append(prev);
+				navi.append(next);
+				this.body.append(navi);
+				this.navi = navi;
 	
-				_prev.addEventListener('click', () => this.move(-1));
-				_next.addEventListener('click', () => this.move());
+				prev.addEventListener('click', () => this.move(-1));
+				next.addEventListener('click', () => this.move());
 	
-				this.images.forEach(image => {
-					image.addEventListener('click', () => { this.move() });
+				this.items.forEach(item => {
+					item.addEventListener('click', () => { 
+						if (item.tagName.toUpperCase() !== 'VIDEO')
+							this.move(); 
+					});
 				});
+
+				this.slideshow = true;
 			}
 		}
 
@@ -173,7 +189,8 @@ export const makeModalFrame = function(props = {}) {
 				document.body.append(underlay);
 	
 				this.modal = underlay;
-				this.body = content;
+				this.body = body;
+				this.content = content;
 			}
 		}
 

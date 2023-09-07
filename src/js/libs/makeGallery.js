@@ -45,7 +45,10 @@
 import { makeGallery } from "../../js/lib";
 makeGallery(document.querySelectorAll('.someblock'), { 
 	class: gallery,
-	navigation: true 
+	navigation: true,
+	render: function() {
+		console.log(this);
+	}
 });
 * 
 * @параметры вызова:
@@ -53,6 +56,7 @@ makeGallery(document.querySelectorAll('.someblock'), {
 * class - имя класса галереи в динамически создаваемой разметке
 * thumbnails - блок кликабельных превьюшек, под галереей
 * navigation - включение дополнительной стрелочной навигации
+* render - функция обратного вызова после создания структуры галереи
 */
 
 export const makeGallery = (items, options = {}) => {
@@ -111,6 +115,10 @@ export const makeGallery = (items, options = {}) => {
 				$prev.className = `${this.options.class}__prev`;
 				$next.className = `${this.options.class}__next`;
 				this.$frame.append($prev, $next);
+			}
+
+			if (typeof this.options.render === 'function')  {
+				return this.options.render.call(this.$frame);
 			}
 		}
 
