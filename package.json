@@ -49,12 +49,7 @@
 		"vinyl-ftp": "^0.6.1",
 		"webpack-stream": "^7.0.0"
 	},
-	"dependencies": {
-		"jquery": "^3.6.0"
-	},
-	"externalJs": {
-		"jquery": "dist/jquery.min.js"
-	},
+	"externalJs": {},
 	"ftp": {
 		"host": "",
 		"user": "",
