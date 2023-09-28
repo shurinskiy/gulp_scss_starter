@@ -26,6 +26,15 @@ $images-path: "images/";
 	@return $str;
 }
 
+// сбросить размерность у чисел
+@function num($number) {
+	@if type-of($number) == 'number' and not unitless($number) {
+		@return math.div($number, ($number * 0 + 1));
+	}
+
+	@return $number;
+}
+
 
 /* Утилиты */
 
@@ -231,4 +240,11 @@ $images-path: "images/";
 	text-decoration: none;
 	cursor: pointer;
 	color: inherit;
+}
+
+// плавное изменение шрифта на заданном диапазоне ширины экрана
+@mixin setFontSize($currentSize, $targetSize, $currentScreen, $targetScreen) {
+	$diffSize: num($currentSize) - num($targetSize);
+	$diffScreen: num($currentScreen) - num($targetScreen);
+	font-size: calc(#{$targetSize} + #{$diffSize} * ((100vw - #{$targetScreen}) / #{$diffScreen}));
 }

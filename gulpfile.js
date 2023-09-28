@@ -22,9 +22,6 @@ let webconf = {
 				}
 		}]
 	},
-	externals: {
-		jquery: 'jQuery'
-	},
 	mode: isDev ? 'development' : 'production',
 	devtool: isDev ? 'eval-source-map' : false
 };

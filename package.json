@@ -4,11 +4,11 @@
 	"scripts": {
 		"postinstall": "",
 		"bem": "bemtree-from-html",
-		"start": "gulp watch --dev --sync",
-		"remote": "gulp watch --remote",
-		"build": "gulp build",
-		"deploy-all": "gulp deploy --all",
-		"deploy": "gulp deploy"
+		"start": "gulp watch --dev --sync --openssl-legacy-provider",
+		"remote": "gulp watch --remote --openssl-legacy-provider",
+		"build": "gulp build --openssl-legacy-provider",
+		"deploy-all": "gulp deploy --all --openssl-legacy-provider",
+		"deploy": "gulp deploy --openssl-legacy-provider"
 	},
 	"keywords": [
 		"bem",
