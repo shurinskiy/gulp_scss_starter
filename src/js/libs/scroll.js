@@ -92,7 +92,7 @@ export const scrollBasedToggle = (sticky, items, options = {}) => {
 * data-animation="0.5" - показатель смещения. Относительный множитель 
 * показывающий на какую часть от своей высоты, должен показаться снизу 
 * элемент, чтобы добавился класс. Принимает положительные и отрицательные 
-* значения. Так же, может абсолютно задаваться в пикселях
+* значения. Так же, может абсолютно задаваться в пикселях. 
 * 
 * data-repeat - убирать класс, если элемент вновь уходит за нижндюю
 * границу браузера
@@ -100,63 +100,88 @@ export const scrollBasedToggle = (sticky, items, options = {}) => {
 * @вызов:
 * 
 import { scrollClassToggle } from "../../js/libs/scroll";
-scrollClassToggle({
+let toggle = scrollClassToggle({
 	nodes: document.querySelectorAll('.someblock'), // это нужно, если есть элементы имеющие СВОЮ прокрутку, которую надо слушать
 	data: 'animation',
-	class: 'showed'
+	class: 'showed',
+	ontoggle: (item) => {
+
+	}
 });
+toggle.init(); // переинициализация
+toggle.init(false); // удаление добавленных классов и отвязка обработчиков
+*
 */
 
-// старая версия:
-/* export const scrollClassToggle = (data = 'shift', cls = "active") => {
-	const classToggle = (item) => {
-		const repeat = item.dataset['repeat'] != undefined;
-		const box = item.getBoundingClientRect();
-		const shift = box.height * item.dataset[`${data}`] || 0;
-		const over = box.bottom + shift > 0;
-		const under = box.bottom - shift - window.innerHeight < 0;
-
-		if (repeat || !item.classList.contains(`${cls}`))
-			item.classList[(over && under) ? 'add': 'remove'](`${cls}`);
-	};
-	
-	document.querySelectorAll(`[data-${data}]`).forEach((item) => {
-		window.addEventListener('scroll', () => classToggle(item));
-		classToggle(item);
-	});
-} */
-
 export const scrollClassToggle = (options) => {
-	let props = {
-		nodes: [],
-		data: 'animation',
-		class: 'active',
-		...options
+	class Toggle {
+	
+		constructor(options) {
+			this.options = {
+				nodes: [],
+				data: 'animation',
+				class: 'active',
+				...options
+			}
+
+			this.nodes = [ window, ...this.options.nodes ];
+			this.init();
+		}
+
+		_throttle = (fn, delay = 250) => {
+			let timeout = null;
+		
+			return (...args) => {
+				if (timeout === null) {
+					
+					timeout = setTimeout(() => {
+						fn.apply(this, args);
+						timeout = null;
+					}, delay)
+				}
+			}
+		}
+
+		toggle = (item) => {
+			const repeat = item.dataset['repeat'] != undefined;
+			const box = item.getBoundingClientRect();
+			
+			let shift = item.dataset[`${this.options.data}`] || '0';
+			shift = shift.includes('px') ? box.height - parseFloat(shift) : box.height * shift;
+		
+			const over = box.bottom + shift > 0;
+			const under = box.bottom - shift - window.innerHeight < 0;
+
+			if (repeat || !item.classList.contains(`${this.options.class}`))
+				item.classList[(over && under) ? 'add': 'remove'](`${this.options.class}`);
+
+			if (typeof this.options.ontoggle === 'function') 
+				return this.options.ontoggle.call(item);
+		};
+
+		init(flag = true) {
+			if (flag) {
+				this.items = [...document.querySelectorAll(`[data-${this.options.data}]`)].map(item => {
+					item.handler = this._throttle(this.toggle.bind(this, item));
+					return item;
+				});
+			}
+
+			this.items.forEach((item) => {
+				item.classList.remove(`${this.options.class}`);
+
+				this.nodes.forEach(node => {
+					node[(flag ? 'add' : 'remove') + 'EventListener']('scroll', item.handler)
+				});
+				
+				flag && this.toggle(item);
+			});
+		}
 	}
 
-	let nodes = [ window, ...props.nodes ];
-
-	const classToggle = (item) => {
-		const repeat = item.dataset['repeat'] != undefined;
-		const box = item.getBoundingClientRect();
-		
-		let shift = item.dataset[`${props.data}`] || '0';
-		shift = shift.includes('px') ? box.height - parseFloat(shift) : box.height * shift;
-	
-		const over = box.bottom + shift > 0;
-		const under = box.bottom - shift - window.innerHeight < 0;
-
-		if (repeat || !item.classList.contains(`${props.class}`))
-			item.classList[(over && under) ? 'add': 'remove'](`${props.class}`);
-	};
-	
-	document.querySelectorAll(`[data-${props.data}]`).forEach((item) => {
-		nodes.forEach(node => {
-			node.addEventListener('scroll', () => classToggle(item));
-		});
-		classToggle(item);
-	});
+	return new Toggle(options);
 }
+
 
 /* 
 * Простой, вертикальный параллакс-эффект. Создает для указанного

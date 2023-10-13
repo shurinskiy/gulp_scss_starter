@@ -7,7 +7,7 @@ export const isObject = (item) => {
 }
 
 
-//Слияние двух объектов с глубокой вложенностью
+// Слияние двух объектов с глубокой вложенностью
 export const mergeDeep = (target, ...sources) => {
 	if (!sources.length) return target;
 	const source = sources.shift();
