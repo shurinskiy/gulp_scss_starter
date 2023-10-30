@@ -3,7 +3,6 @@
 $basesize: 16; 
 $images-path: "images/"; 
 
-
 /* Функции */
 
 // Замена подстроки в строке
@@ -35,21 +34,19 @@ $images-path: "images/";
 	@return $number;
 }
 
-
 /* Утилиты */
 
 // подключить шрифт 
-@mixin font-face($file, $family, $weight: "normal", $folder: "fonts/") { 
+@mixin font-face($file, $family, $weight: "normal", $style: "normal", $folder: "fonts/") { 
 	@font-face { 
-		font-family: $family; 
-		src: url("#{$folder}#{$file}.eot?#iefix") format('embedded-opentype'), 
-			url("#{$folder}#{$file}.woff") format('woff'), 
-			url("#{$folder}#{$file}.woff2") format('woff2'), 
-			url("#{$folder}#{$file}.ttf")  format('truetype'); 
-		font-weight: $weight; 
-		font-style: normal; 
+		font-family: $family;
+		src: url("#{$folder}#{$file}.woff") format('woff'),
+			url("#{$folder}#{$file}.woff2") format('woff2'),
+			url("#{$folder}#{$file}.ttf")  format('truetype');
+		font-weight: $weight;
+		font-style: $style;
 	} 
-} 
+}
   	
 // вставить символ псевдографики 
 @mixin inssymbol( $font, $symbol: '\0000', $pseudo: "after") { 

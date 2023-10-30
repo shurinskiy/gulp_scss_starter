@@ -113,7 +113,7 @@ toggle.init(false); // удаление добавленных классов и
 *
 */
 
-export const scrollClassToggle = (options) => {
+export const scrollClassToggle = (options = {}) => {
 	class Toggle {
 	
 		constructor(options) {

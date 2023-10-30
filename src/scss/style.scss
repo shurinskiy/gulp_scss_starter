@@ -20,26 +20,17 @@ $breakpoints: (
 	'xxxxlg': 1920px
 );
 
-// Import animate-scss
-// @import
-	// "../../node_modules/animate-scss/_properties.scss",
-	// "../../node_modules/animate-scss/_attention-seekers/attention-seekers.scss",
-	// "../../node_modules/animate-scss/_bouncing-entrances/bouncing-entrances.scss",
-	// "../../node_modules/animate-scss/_bouncing-exits/bouncing-exits.scss",
-	// "../../node_modules/animate-scss/_fading-entrances/fading-entrances.scss",
-	// "../../node_modules/animate-scss/_fading-exits/fading-exits.scss",
-	// "../../node_modules/animate-scss/_flippers/flippers.scss",
-	// "../../node_modules/animate-scss/_lightspeed/lightspeed.scss",
-	// "../../node_modules/animate-scss/_rotating-entrances/rotating-entrances.scss",
-	// "../../node_modules/animate-scss/_rotating-exits/rotating-exits.scss",
-	// "../../node_modules/animate-scss/_sliding-entrances/sliding-entrances.scss",
-	// "../../node_modules/animate-scss/_sliding-exits/sliding-exits.scss",
-	// "../../node_modules/animate-scss/_specials/specials.scss",
-	// "../../node_modules/animate-scss/_zooming-exits/zooming-exits.scss",
-	// "../../node_modules/animate-scss/_zooming-entrances/zooming-entrances.scss";
 
+// @include font-face("Montserrat-ExtraLight", "DM", 100);
+// @include font-face("Montserrat-Thin", "DM", 200);
+// @include font-face("Montserrat-Light", "DM", 300);
+// @include font-face("Montserrat-Regular", "DM", 400);
+// @include font-face("Montserrat-Medium", "DM", 500);
+// @include font-face("Montserrat-SemiBold", "DM", 600);
+// @include font-face("Montserrat-Bold", "DM", 700);
+// @include font-face("Montserrat-ExtraBold", "DM", 800);
+// @include font-face("Montserrat-Black", "DM", 900);
 
-// @include font-face("Roboto-Black", "RBBL");
 // @import "../../node_modules/swiper/swiper";
 
 // Import BEM blocks scss
@@ -47,10 +38,11 @@ $breakpoints: (
 
 body, html {
 	box-sizing: border-box;
-	font-size: #{$basesize}px;
-	line-height: 1.2;
-	font-family: sans-serif;
 	background-color: #fafafa;
+	font-size: #{$basesize}px;
+	font-family: sans-serif;
+	line-height: 1.2;
+	font-weight: 400;
 	min-height: 100vh;
 	display: flex;
 	flex-flow: column nowrap;
