@@ -51,6 +51,8 @@ masonryBuilder(document.querySelector('.masonry', {
 export const masonryBuilder = (element, options = {}) => {
 	class Masonry {
 		constructor(element, options) {
+			if(!element) return;
+			
 			this.containerNode = element;
 			this.childrenNodes = element.children;
 			this.childrenData = [];
