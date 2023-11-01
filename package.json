@@ -42,7 +42,7 @@
 		"gulp-sass": "^5.1.0",
 		"gulp-sass-glob": "^1.1.0",
 		"gulp-sourcemaps": "^3.0.0",
-		"gulp-svg-symbol-view": "^1.0.2",
+		"gulp-svg-symbol-view": "^1.0.3",
 		"gulp-ttf2woff2": "^4.0.1",
 		"include-media": "^2.0.0",
 		"sass": "^1.62.1",
