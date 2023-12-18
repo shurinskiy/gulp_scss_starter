@@ -93,20 +93,30 @@ export const makeModalFrame = function(props = {}) {
 		}
 
 		open(el) {
-			const id = el.dataset[`${this.props.class}`] || 'error';
-			const content = (id == '#') ? el.innerHTML : document.querySelector('#' + id)?.innerHTML;
-			
+			const data = el.dataset[`${this.props.class}`];
+			let content;
+
+			if (!data) {
+				content = el.innerHTML;
+			} else if (data.includes('#')) {
+				content = document.querySelector(data)?.innerHTML;
+			} else {
+				content = document.createElement('img');
+				content.src = data;
+			}
+
 			this.modal.className = `${this.props.class}`;
-			this.modal.classList.add(id != '#' ? `${this.props.class}_${id}`:`${this.props.class}_self`);
+			this.modal.classList.add(data.includes('#') ? `${this.props.class}_${data.replace('#', '')}`:`${this.props.class}_self`);
 			this.modal.style.display = "block";
 			
 			this.content.innerHTML = '';
 			this.content.className = `${this.props.class}__content`;
-			this.content.insertAdjacentHTML('beforeend', content ?? '');
+			this.content['insertAdjacent' + ((typeof content == 'string') ? 'HTML' : 'Element')]('beforeend', content ?? '');
 			
-			this._slideshow(el.attributes.rel?.value);
+			if (! data.includes('#'))
+				this._slideshow(el.attributes.rel?.value);
 
-			if(this.scrollLock)
+			if (this.scrollLock)
 				this.scrollLock.disablePageScroll();
 
 			if (typeof this.props.open === 'function') 
@@ -128,15 +138,31 @@ export const makeModalFrame = function(props = {}) {
 
 		_slideshow(rel) {
 			if (! rel) return;
+			
+			let counter = 0;
 			const current = this.content.querySelector('img, video');
-			const items_related = document.querySelectorAll(`[rel="${rel}"] img, [rel="${rel}"] video`);
-			const items_cleared = [...items_related].filter(item => item.src !== current.src);
+			
+			[...document.querySelectorAll(`[rel="${rel}"]`)].map(item => {
+				const data = item.dataset[`${this.props.class}`];
+				let child;
+
+				if (!data) {
+					child = item.querySelector('img, video').cloneNode();
+				} else {
+					child = document.createElement('img');
+					child.src = data;
+				}
+				
+				if (child.src !== current.src) {
+					this.content.appendChild(child);
+					counter++;
+				}
+			});
 
 			this.content.classList.add(`${this.props.class}__content_${this.props.slideshowClassMod}`);
 			current.classList.add(`${this.props.slideshowClassActive}`);
-			items_cleared.map(item => { this.content.appendChild(item.cloneNode()) });
 
-			if (items_cleared) {
+			if (counter > 1) {
 				const navi = document.createElement('div');
 				const prev = document.createElement('button');
 				const next = document.createElement('button');
@@ -200,7 +226,7 @@ export const makeModalFrame = function(props = {}) {
 			document.addEventListener('click', (e) => {
 				let el = e.target.closest(this.select);
 				
-				if (el && el.dataset[`${this.props.class}`]) {
+				if (el && el.hasAttribute(`data-${this.props.class}`)) {
 					e.preventDefault();
 					this.open(el);
 				}
@@ -210,6 +236,11 @@ export const makeModalFrame = function(props = {}) {
 					this.close();
 				}
 			});
+			
+			document.addEventListener('keydown', (e) => {
+				if (this.modal.style.display === 'block' && (e.key === "Escape" || e.key === "Esc"))
+					this.close();
+			})
 		}
 	}
 

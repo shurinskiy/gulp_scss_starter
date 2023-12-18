@@ -104,9 +104,12 @@ let toggle = scrollClassToggle({
 	nodes: document.querySelectorAll('.someblock'), // это нужно, если есть элементы имеющие СВОЮ прокрутку, которую надо слушать
 	data: 'animation',
 	class: 'showed',
-	ontoggle: (item) => {
+	onadd: (item) => {
 
-	}
+	},
+	onremove: (item) => {
+
+	},
 });
 toggle.init(); // переинициализация
 toggle.init(false); // удаление добавленных классов и отвязка обработчиков
@@ -138,32 +141,39 @@ export const scrollClassToggle = (options = {}) => {
 					timeout = setTimeout(() => {
 						fn.apply(this, args);
 						timeout = null;
-					}, this.throttle)
+					}, this.options.throttle);
 				}
 			}
 		}
 
 		toggle = (item) => {
-			const repeat = item.dataset['repeat'] != undefined;
+			let action;
 			const box = item.getBoundingClientRect();
+			const repeat = item.dataset['repeat'] != undefined;
+			const active = item.classList.contains(`${this.options.class}`);
 			
 			let shift = item.dataset[`${this.options.data}`] || '0';
 			shift = shift.includes('px') ? box.height - parseFloat(shift) : box.height * shift;
-		
+			
 			const over = box.bottom + shift > 0;
 			const under = box.bottom - shift - window.innerHeight < 0;
 
-			if (repeat || !item.classList.contains(`${this.options.class}`))
-				item.classList[(over && under) ? 'add': 'remove'](`${this.options.class}`);
-
-			if (typeof this.options.ontoggle === 'function') 
-				return this.options.ontoggle.call(item);
+			if (over && under && !active) action = 'add';
+			if (!(over && under) && active && repeat) action = 'remove';
+			
+			if (action) {
+				item.classList[action](`${this.options.class}`);
+	
+				if (typeof this.options[`on${action}`] === 'function')
+					return this.options[`on${action}`].call(item);
+			}
 		};
 
 		init(flag = true) {
 			if (flag) {
-				this.items = [...document.querySelectorAll(`[data-${this.options.data}]`)].map(item => {
+				this.items = [...document.querySelectorAll(`[data-${this.options.data}]`)].map((item, i) => {
 					item.handler = this._throttle(this.toggle.bind(this, item));
+					item.index = i;
 					return item;
 				});
 			}

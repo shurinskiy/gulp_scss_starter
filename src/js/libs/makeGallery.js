@@ -72,7 +72,7 @@ export const makeGallery = (items, options = {}) => {
 			};
 
 			this.$frame = item;
-			this.$images = this.$frame.querySelectorAll('img');
+			this.$items = this.$frame.querySelectorAll('img, video');
 			this.$wrapper = document.createElement('div');
 			this.$thumbs = document.createElement('div');
 			this.$prev = document.createElement('button');
@@ -87,17 +87,18 @@ export const makeGallery = (items, options = {}) => {
 			this.$thumbs.className = `${this.options.class}__thumbs`;
 			this.$frame.className = `${this.options.class}__frame`;
 
-			this.$images.forEach((item, i) => {
+			this.$items.forEach((item, i) => {
 				let active = i ? '':'active';
-				let $image = document.createElement('div');
-				$image.className = `${this.options.class}__image ${active}`;
-				this.$frame.append($image);
-				$image.append(item);
+				let $item = document.createElement('div');
+				$item.className = `${this.options.class}__item ${active}`;
+				this.$frame.append($item);
+				$item.append(item);
 		
 				if(this.options.thumbnails) {
 					let $thumb = document.createElement('span');
+					let bg = item.poster || item.src;
 					$thumb.className = `${this.options.class}__thumb ${active}`;
-					$thumb.style.backgroundImage = `url(${item.src})`;
+					$thumb.style.backgroundImage = `url(${bg})`;
 					this.$thumbs.append($thumb);
 				}
 			});
@@ -120,25 +121,26 @@ export const makeGallery = (items, options = {}) => {
 			if (typeof this.options.render === 'function')  {
 				return this.options.render.call(this.$frame);
 			}
+
 		}
 
 		clearActive() {
-			[...this.$images].map((el) => { el.parentNode.classList.remove('active') });
+			[...this.$items].map((el) => { el.parentNode.classList.remove('active') });
 			[...this.$thumbs.children].map((el) => { el.classList.remove('active') });
 		}
 
 		moveActive(direction = 1) {
-			let currentActive = [...this.$images].findIndex(el => el.parentNode.classList.contains('active'));
+			let currentActive = [...this.$items].findIndex(el => el.parentNode.classList.contains('active'));
 			this.clearActive();
 			currentActive += direction;
 
-			if (currentActive >= this.$images.length) {
+			if (currentActive >= this.$items.length) {
 				currentActive = 0;
 			} else if(currentActive < 0) {
-				currentActive = this.$images.length - 1;
+				currentActive = this.$items.length - 1;
 			}
 
-			this.$images[currentActive].parentNode.classList.add('active')
+			this.$items[currentActive].parentNode.classList.add('active')
 			this.$thumbs.children[currentActive]?.classList.add('active');
 		}
 
@@ -146,7 +148,7 @@ export const makeGallery = (items, options = {}) => {
 			// если клик по превьюшке
 			if(e.target.classList.contains(`${this.options.class}__thumb`)) {
 				this.clearActive();
-				this.$images[[...this.$thumbs.children].findIndex(el => el == e.target)].parentNode.classList.add('active');
+				this.$items[[...this.$thumbs.children].findIndex(el => el == e.target)].parentNode.classList.add('active');
 				e.target.classList.add('active');
 			}
 
