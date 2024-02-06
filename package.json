@@ -57,9 +57,9 @@
 		"workdir": ""
 	},
 	"bemtree": {
-		"from": "src/**/!(_|temp)*.html",
+		"from": "src/**/*.html",
 		"to": "src/blocks",
 		"js": "src/js/blocks.js",
-		"omit": "@@,js-,active,opened"
+		"omit": "@@,js-,active,opened,header,footer"
 	}
 }

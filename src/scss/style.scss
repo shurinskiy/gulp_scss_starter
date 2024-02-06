@@ -1,6 +1,12 @@
 @import "lib/additional.scss"; 
 @include reset(); 
 
+// Browsersync mark
+#__bs_notify__ { 
+	background-color: rgba(27, 32, 50, 0.4) !important;
+	color: rgba(250, 250, 250, 0.6) !important;
+}
+
 // Include breakpoints badge
 body { @include screen-media(); }
 
@@ -36,10 +42,21 @@ $breakpoints: (
 // Import BEM blocks scss
 @import "../blocks/**/*.scss";
 
+:root {
+	--size: #{$basesize}px;
+	--container: 1240px;
+	--gap: 24px;
+	
+	@include media('<=xs') {
+		--gap: 16px;
+	}
+}
+
+
 body, html {
 	box-sizing: border-box;
 	background-color: #fafafa;
-	font-size: #{$basesize}px;
+	font-size: var(--size);
 	font-family: sans-serif;
 	line-height: 1.2;
 	font-weight: 400;
