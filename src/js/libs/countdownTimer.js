@@ -80,7 +80,7 @@ countdownTimer(document.querySelector('.someblock'), {
 export const countdownTimer = (element, options = {}) => {
 	class Timer {
 		constructor(element, options) {
-			if(!element) return;
+			if(!element || element.hasChildNodes()) return;
 
 			this.options = {
 				class: 'timer',
