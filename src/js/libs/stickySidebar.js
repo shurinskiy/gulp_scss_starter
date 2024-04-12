@@ -25,7 +25,7 @@ export const stickySidebar = (items, options = {}) => {
 				return;
 			}
 
-			this.endScroll = window.innerHeight - this.aside.offsetHeight - this.options.top;
+			this.endScroll = window.innerHeight - this.aside.offsetHeight - this.options.bottom;
 	
 			let asideTop = parseInt(this.aside.style.top.replace('px;', ''));
 	
@@ -66,10 +66,7 @@ export const stickySidebar = (items, options = {}) => {
 			this.endScroll = window.innerHeight - this.asideHeight - this.options.bottom;
 			this.aside.style.top = this.startScroll + 'px';
 
-			window.addEventListener('scroll', this.asideScroll.bind(this), {
-				capture: true,
-				passive: true
-			});
+			window.addEventListener('scroll', this.asideScroll.bind(this), { capture: true, passive: true });
 
 			window.addEventListener('resize', this._throttle(() => {
 				this.position = getComputedStyle(this.aside).position;

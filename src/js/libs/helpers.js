@@ -194,12 +194,28 @@ export const slideDown = (el, duration = 500, cb) => {
 }
 
 
-// Плавно переключить отображение элемента
+/* 
+* Плавно переключить отображение элемента
+* @вызов:
+* 
+import { slideToggle } from "../../js/libs/helpers.js";
+*
+document.querySelectorAll('.someblock__cap').forEach(cap => {
+	cap.addEventListener('click', e => {
+		e.stopPropagation();
+		e.target.classList.toggle('opened', slideToggle(cap.nextElementSibling, 400));
+	})
+});
+* 
+*/
+
 export const slideToggle = (el, duration, cb) => {
 	if (window.getComputedStyle(el).display === 'none') {
-		return slideDown(el, duration, cb);
+		slideDown(el, duration, cb);
+		return true;
 	} else {
-		return slideUp(el, duration, cb);
+		slideUp(el, duration, cb);
+		return false;
 	}
 }
 

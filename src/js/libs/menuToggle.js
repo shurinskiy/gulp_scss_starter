@@ -109,8 +109,8 @@ export const menuToggle = (menu, toggles, options = {}) => {
 							e.preventDefault();
 							this.menuClose(e);
 						}
-					});
-				}, { passive: false });
+					}, { passive: false });
+				});
 			}
 		}
 	}

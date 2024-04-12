@@ -28,7 +28,7 @@ import { smoothAccordion } from "../../js/libs/accordions";
 document.querySelectorAll('.accordeon').forEach((c) => {
 	smoothAccordion(accordeon.querySelectorAll('.accordeon__head'), { 
 		events: 'click, mouseenter',
-		cls: 'active,
+		cls: 'active',
 		toggle: false
 	});
 });

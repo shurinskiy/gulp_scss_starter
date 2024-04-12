@@ -71,7 +71,7 @@ export const scrollBasedToggle = (sticky, items, options = {}) => {
 			}
 		};
 		
-		window.addEventListener('scroll', () => classToggle(items, _wrapper, active));
+		window.addEventListener('scroll', () => classToggle(items, _wrapper, active), { capture: true, passive: true });
 	}
 }
 
@@ -254,7 +254,7 @@ export const makeParallax = (selector, cls = "parallax") => {
 			}
 		}
 
-		window.addEventListener('scroll', translateY);
+		window.addEventListener('scroll', translateY, { capture: true, passive: true });
 		translateY();
 	});
 }
@@ -358,6 +358,6 @@ export const deepParallax = (container, items, options = {}) => {
 
 	if (items.length) {
 		initDeep();
-		window.addEventListener('scroll', () => moveDeep());
+		window.addEventListener('scroll', () => moveDeep(), { capture: true, passive: true });
 	}
 };

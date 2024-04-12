@@ -23,38 +23,45 @@
 import { driveTabs } from "../../js/libs/driveTabs";
 driveTabs({
 	container: '.tab',
-	button: '.tab__button',
-	block: '.tab__block',
+	controls: '.tab__button',
+	selects: '.tab__block',
 	cls: 'active'
 }, function() {
-	console.log(this);
+	this.classList.add('showing');
+
+	this.addEventListener('animationend', e => {
+		this.classList.remove('showing');
+	}, { once: true });
 });
 * 
 */
 
 export const driveTabs = (options = {}, cb) => {
 	const containers = options.container || '.tab';
-	const button = options.button || `.${containers}__button`;
-	const block = options.block || `.${containers}__block`;
+	const controls = options.controls || `.${containers}__button`;
+	const selects = [options.selects].flat() || [`.${containers}__block`];
 	const cls = options.cls || 'active';
 
 	document.querySelectorAll(containers).forEach((container) => {
-		const buttons = container.querySelectorAll(button);
-		const blocks = container.querySelectorAll(block);
+		const buttons = container.querySelectorAll(controls);
+		const blocks = selects.map(set => container.querySelectorAll(set));
 
 		buttons.forEach((button, i) => {
 			button.addEventListener('click', (e) => {
+				e.preventDefault();
+
 				if (! e.target.classList.contains(`${cls}`)) {
 					buttons.forEach((button, i) => {
 						button.classList.remove(`${cls}`);
-						blocks[i].classList.remove(`${cls}`);
+						blocks.map(set => set[i].classList.remove(`${cls}`));
 					});
 		
 					button.classList.add(`${cls}`);
-					blocks[i].classList.add(`${cls}`);
-	
-					if (typeof cb === 'function') 
-						return cb.call(blocks[i]);
+
+					blocks.map(set => {
+						set[i].classList.add(`${cls}`);
+						(typeof cb === 'function') && cb.call(set[i]);
+					});
 				}
 			});
 		});
