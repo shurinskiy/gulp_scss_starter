@@ -121,8 +121,11 @@ export const getHeight = (el) => {
 
 
 // Плавно скрыть элемент
-export const slideUp = (el, duration = 500, cb) => {
+export const slideUp = (el, options = {}) => {
 	if ((el.style.transitionDuration && el.style.transitionProperty) || window.getComputedStyle(el).display === 'none') return;
+
+	const duration = options.duration || 500;
+	const opacity = options.opacity && { opacity: 0 };
 
 	const set = {
 		overflow: 'hidden',
@@ -130,14 +133,16 @@ export const slideUp = (el, duration = 500, cb) => {
 		marginBottom: 0,
 		paddingTop: 0,
 		marginTop: 0,
-		height: 0
+		height: 0,
+		...opacity
 	}
 	
 	const transition = {
-		transitionProperty: 'height, margin, padding',
+		transitionProperty: 'height, margin, padding, opacity',
 		transitionDuration: duration + 'ms',
 		height: el.offsetHeight + 'px',
 		boxSizing: 'border-box',
+		opacity: 1,
 	}
 		
 	Object.assign(el.style, transition);
@@ -147,16 +152,20 @@ export const slideUp = (el, duration = 500, cb) => {
 	window.setTimeout(() => {
 		el.removeAttribute('style');
 		el.style.display = 'none';
-		if (typeof cb === 'function') return cb.call(el);
+		
+		if (typeof options.callback === 'function') 
+			return callback.call(el);
 	}, duration);
 }
 
 
 // Плавно показать элемент
-export const slideDown = (el, duration = 500, cb) => {
+export const slideDown = (el, options = {}) => {
 	if ((el.style.transitionDuration && el.style.transitionProperty) || window.getComputedStyle(el).display !== 'none') return;
 
 	el.style.display = 'block';
+	const duration = options.duration || 500;
+	const opacity = options.opacity && { opacity: 0 };
 
 	const set = {
 		overflow: 'hidden',
@@ -164,14 +173,16 @@ export const slideDown = (el, duration = 500, cb) => {
 		marginBottom: 0,
 		paddingTop: 0,
 		marginTop: 0,
-		height: 0
+		height: 0,
+		...opacity
 	}
 	
 	const transition = {
-		transitionProperty: 'height, margin, padding',
+		transitionProperty: 'height, margin, padding, opacity',
 		transitionDuration: duration + 'ms',
 		height: el.offsetHeight + 'px',
 		boxSizing: 'border-box',
+		opacity: 1,
 	}
 
 	Object.assign(el.style, set);
@@ -186,38 +197,28 @@ export const slideDown = (el, duration = 500, cb) => {
 	window.setTimeout(() => {
 		el.style.removeProperty('box-sizing');
 		el.style.removeProperty('height');
+		el.style.removeProperty('opacity');
 		el.style.removeProperty('overflow');
 		el.style.removeProperty('transition-duration');
 		el.style.removeProperty('transition-property');
-		if (typeof cb === 'function') return cb.call(el);
+
+		if (typeof options.callback === 'function') 
+			return callback.call(el);
 	}, duration);
 }
 
 
-/* 
-* Плавно переключить отображение элемента
-* @вызов:
-* 
-import { slideToggle } from "../../js/libs/helpers.js";
-*
-document.querySelectorAll('.someblock__cap').forEach(cap => {
-	cap.addEventListener('click', e => {
-		e.stopPropagation();
-		e.target.classList.toggle('opened', slideToggle(cap.nextElementSibling, 400));
-	})
-});
-* 
-*/
-
-export const slideToggle = (el, duration, cb) => {
+// Плавно переключить отображение элемента
+export const slideToggle = (el, options) => {
 	if (window.getComputedStyle(el).display === 'none') {
-		slideDown(el, duration, cb);
+		slideDown(el, options);
 		return true;
 	} else {
-		slideUp(el, duration, cb);
+		slideUp(el, options);
 		return false;
 	}
 }
+
 
 /* 
 * Плавная прокрутка к заданному элементу 

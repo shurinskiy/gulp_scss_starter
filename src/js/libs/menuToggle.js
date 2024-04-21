@@ -25,10 +25,15 @@ menuToggle(menu, toggles,  {
 	globalClose: true,
 	omitToClose: '.modal, .form',
 	open: function() {
-		console.log(this)
+		const maxw = parseInt(getComputedStyle(this).maxWidth);
+		const scrollw = scrollLock.getPageScrollBarWidth();
+
+		Object.assign(this.style, { maxWidth: maxw + scrollw + 'px' });
+		scrollLock.disablePageScroll();
 	},
 	close: function() {
-		...
+		scrollLock.clearQueueScrollLocks();
+		scrollLock.enablePageScroll();
 	}
 });
 * 
@@ -49,40 +54,31 @@ export const menuToggle = (menu, toggles, options = {}) => {
 		}
 			
 
-		menuOpen(e) {
+		menuOpen(e, cb = this.options.open) {
 			if(e) {
 				e.preventDefault();
 				e.stopPropagation();
 			}
 
 			menu.classList.add(`${this.options.class}`);
-	
-			if(typeof this.options.scrollLock !== 'undefined') {
-				const maxw = parseInt(getComputedStyle(menu).maxWidth);
-				const scrollw = this.options.scrollLock.getPageScrollBarWidth();
-				
-				Object.assign(menu.style, { maxWidth: maxw + scrollw + 'px' });
-				this.options.scrollLock.disablePageScroll();
-			}
 
-			if (typeof this.options.open === 'function') 
-				return this.options.open.call(menu);
+			if (typeof cb === 'function') cb.call(menu);
+			return true;
 		}
 		
 
-		menuClose(e) {
-			if(e) e.stopPropagation();
-
+		menuClose(e, cb = this.options.close) {
+			if (e) e.stopPropagation();
+			
 			menu.classList.remove(`${this.options.class}`);
 			menu.removeAttribute('style');
 			
-			if(typeof this.options.scrollLock !== 'undefined') {
-				this.options.scrollLock.clearQueueScrollLocks();
-				this.options.scrollLock.enablePageScroll();
-			}
+			if (typeof cb === 'function') cb.call(menu);
+			return false;
+		}
 	
-			if (typeof this.options.close === 'function') 
-				return this.options.close.call(menu);
+		menuToggle(e) {
+			menu.classList.contains(`${this.options.class}`) ? this.menuClose(e) : this.menuOpen(e);
 		}
 
 
@@ -94,9 +90,7 @@ export const menuToggle = (menu, toggles, options = {}) => {
 		
 		init() {
 			toggles.forEach(toggle => {
-				toggle.addEventListener('click', (e) => {
-					menu.classList.contains(`${this.options.class}`) ? this.menuClose(e) : this.menuOpen(e);
-				});
+				toggle.addEventListener('click', (e) => this.menuToggle(e));
 			});
 
 			if(this.options.globalClose) {

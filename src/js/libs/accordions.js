@@ -54,16 +54,16 @@ export const smoothAccordion = function(items, options = {}) {
 
 				items.forEach(item => {
 					if (item != this) {
-						slideUp(item.nextElementSibling, duration);
+						slideUp(item.nextElementSibling, { duration: duration });
 						item.classList.remove(`${cls}`);
 					}
 				});
 
 				if (toggle) {
-					slideToggle(item.nextElementSibling, duration);
+					slideToggle(item.nextElementSibling, { duration: duration });
 					this.classList.toggle(`${cls}`);
 				} else {
-					slideDown(item.nextElementSibling, duration);
+					slideDown(item.nextElementSibling, { duration: duration });
 					this.classList.add(`${cls}`);
 				}
 			})
