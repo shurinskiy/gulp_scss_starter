@@ -1,54 +1,58 @@
 /* 
 * Простое модальное окно. Слушает элементы имеющие data-атрибут с именем 
 * укзанным в параметре cls при вызове (по умолчанию 'modal'). Выборка элементов 
-* для прослушиваения, может уточняться параметром select при вызове. При клике по 
-* такому элементу либо находит блок, по id указанному в значении data-атрибута,
-* либо, если в значении data-атрибута указана # (удобно для увеличения изображения, 
-* например), берет внутренний html этого элемента и выводит в модальном окне. 
-* Если элемент содержит атрибут rel, скрипт ожидает, что внутри будет изображение, 
-* ищет другие изображения, обернутые в элемент содержащий атрибут rel с таким же 
-* значением, и создает внутри текущего окна, из этих изображений, галерею с навигацией. 
-* Может работать с внешними скриптом для блокировки прокрутки документа (scrollLock), 
-* если ссылка на него передана в качестве параметра при вызове.
+* для прослушиваения, может уточняться параметром select при вызове. 
+* 
+* <a href="./" data-modal>some content..</a>:
+* если нет значения - берет содержимое (some content..)
+* 
+* <a href="./" data-modal="#someblock"></a>:
+* если начинается с "#", то находит элемент с id="someblock"
+* 
+* <a href="./" data-modal="./images/somepicture.png"></a>:
+* если значение есть, но НЕ начинается с "#" - создает элемент img, в src указывает значение data-modal
+* 
+* <a href="./" data-modal="./images/somepicture.png" rel="gallery"></a>: 
+* если значение есть, но НЕ начинается с "#", а так же имеет не пустой атрибут "rel" - создает элемент img, 
+* в src указывает значение data-modal и создает галерею, из всех найденных, с таким же "rel"
+* 
+* <a href="./" data-modal rel="gallery"><img src="./images/somepicture.png" alt="" /></a>:
+* если нет занчения, но есть не пустой атрибут "rel" - не создает img, а использует содержимое, как элемент галереи
+* 
 * 
 * @элемент для прослушивания:
-* <span data-modal="someblock"></span>
+* <span class="somebutton" data-modal="someblock"></span>
 * 
 * @вызов:
-* 
-import { makeModalFrame } from "../../js/lib";
-makeModalFrame({ class: 'modal' });
-* 
-* @вызов с использованием внешних решений (передаются через callback функцию):
 * 
 import { addUnderlay, makeModalFrame } from "../../js/lib";
 import scrollLock from 'scroll-lock';
 import Inputmask from "inputmask";
-addUnderlay('modal');
+
 makeModalFrame({ 
-	select: '.some-el', 
+	select: '.somebutton', 
 	class: 'modal', 
-	scrollLock,
 	open: function(modal) {
+		scrollLock.disablePageScroll();
 		Inputmask({ 
 			"mask": "+7 (999) 999-99-99", 
 			showMaskOnHover: false 
 		}).mask(this.querySelectorAll('input[type="tel"]'));
 	},
 	close: function() {
-		// some code on close modal
+		scrollLock.enablePageScroll();
 	}
 });
 * 
-* @структура html для создания галлереи:
+* @типичная структура html для создания галлереи:
 * 
-<div data-modal="#" rel="gallery">
+<div data-modal="./images/someimage-big-1.png" rel="gallery">
 	<img src="./images/someimage-1.png" alt="" />
 </div>
-<div data-modal="#" rel="gallery">
+<div data-modal="./images/someimage-big-2.png" rel="gallery">
 	<img src="./images/someimage-2.png" alt="" />
 </div>
-<div data-modal="#" rel="gallery">
+<div data-modal="./images/someimage-big-3.png" rel="gallery">
 	<img src="./images/someimage-3.png" alt="" />
 </div>
 */
@@ -68,18 +72,12 @@ export const makeModalFrame = function(props = {}) {
 			this.body = document.querySelector(`.${this.props.class}__body`);
 			this.content = document.querySelector(`.${this.props.class}__content`);
 			this.navi = document.querySelector(`.${this.props.class}__navi`);
-			this.scrollLock = (typeof this.props.scrollLock !== 'undefined') && this.props.scrollLock;
 			this.slideshow = false;
 		
 			this._init();
 		}
 
-		close() {
-			if(this.scrollLock) {
-				this.scrollLock.clearQueueScrollLocks();
-				this.scrollLock.enablePageScroll();
-			}
-			
+		close(e, cb = this.props.close) {
 			this.modal.className = `${this.props.class}`;
 			this.modal.style.display = "none";
 			
@@ -88,17 +86,17 @@ export const makeModalFrame = function(props = {}) {
 			this.navi?.remove();
 			delete this.cnt, this.items;
 
-			if (typeof this.props.close === 'function') 
-				return this.props.close.call(this.content);
+			if (typeof cb === 'function') cb.call(this.content, this);
+			return false;
 		}
 
-		open(el) {
+		open(el, cb = this.props.open) {
 			const data = el.dataset[`${this.props.class}`];
 			let content;
 
 			if (!data) {
 				content = el.innerHTML;
-			} else if (data.includes('#')) {
+			} else if (data.startsWith('#')) {
 				content = document.querySelector(data)?.innerHTML;
 			} else {
 				content = document.createElement('img');
@@ -106,21 +104,18 @@ export const makeModalFrame = function(props = {}) {
 			}
 
 			this.modal.className = `${this.props.class}`;
-			this.modal.classList.add(data.includes('#') ? `${this.props.class}_${data.replace('#', '')}`:`${this.props.class}_self`);
+			this.modal.classList.add(data.startsWith('#') ? `${this.props.class}_${data.replace('#', '')}`:`${this.props.class}_self`);
 			this.modal.style.display = "block";
 			
 			this.content.innerHTML = '';
 			this.content.className = `${this.props.class}__content`;
 			this.content['insertAdjacent' + ((typeof content == 'string') ? 'HTML' : 'Element')]('beforeend', content ?? '');
 			
-			if (! data.includes('#'))
+			if (! data.startsWith('#'))
 				this._slideshow(el.attributes.rel?.value);
 
-			if (this.scrollLock)
-				this.scrollLock.disablePageScroll();
-
-			if (typeof this.props.open === 'function') 
-				return this.props.open.call(this.content, this, el);
+			if (typeof cb === 'function') cb.call(this.content, this, el);
+			return true;
 		}
 						
 		move(direction = 1) {
