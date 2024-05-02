@@ -54,6 +54,7 @@ $breakpoints: (
 
 
 body, html {
+	scrollbar-gutter: stable;
 	box-sizing: border-box;
 	background-color: #fafafa;
 	font-size: var(--size);

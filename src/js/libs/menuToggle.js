@@ -50,7 +50,7 @@ export const menuToggle = (menu, toggles, options = {}) => {
 				...options
 			};
 
-			this.init();
+			this._init();
 		}
 			
 
@@ -82,13 +82,13 @@ export const menuToggle = (menu, toggles, options = {}) => {
 		}
 
 
-		omitToClose(e) {
+		_omitToClose(e) {
 			const omits = this.options.omitToClose?.split(",").map((item) => item.trim());
 			return omits?.some(omit => !!e.target.closest(`${omit}`));
 		}
 
 		
-		init() {
+		_init() {
 			toggles.forEach(toggle => {
 				toggle.addEventListener('click', (e) => this.menuToggle(e));
 			});
@@ -99,7 +99,7 @@ export const menuToggle = (menu, toggles, options = {}) => {
 						const isopen = menu.classList.contains(`${this.options.class}`);
 						const isself = e.target.closest(`.${menu.className.split(' ')[0]}`);
 
-						if(isopen && !isself && !this.omitToClose(e)) {
+						if(isopen && !isself && !this._omitToClose(e)) {
 							e.preventDefault();
 							this.menuClose(e);
 						}
