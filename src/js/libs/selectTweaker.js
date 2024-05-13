@@ -30,17 +30,23 @@
 * @вызов:
 * 
 import { selectTweaker } from "../../js/libs/selectTweaker";
-selectTweaker(document.querySelectorAll('.someblock__select'));
+selectTweaker(document.querySelectorAll('.someblock__select'), {
+	name: 'select',
+	select: function() {
+		console.log(this);
+	}
+});
 */
 
-export const selectTweaker = (items, name = 'select') => {
+export const selectTweaker = (items, setting = {}) => {
+	let props = { name: 'select', ...setting };
 
 	[...items].forEach(select => {
-		if (select.closest(`.${name}`)) return;
+		if (select.closest(`.${props.name}`)) return;
 
 		const options = select.querySelectorAll('option');
 		const previous = select.previousElementSibling;
-		const currentClass = `${name}__item_current`;
+		const currentClass = `${props.name}__item_current`;
 		
 		const _wrapper = document.createElement('div');
 		const _head = document.createElement('div');
@@ -49,9 +55,9 @@ export const selectTweaker = (items, name = 'select') => {
 		for(let data in select.dataset)
 			_wrapper.dataset[`${data}`] = select.dataset[data];
 
-		_wrapper.className = `${select.className} ${name}`;
-		_head.className = `${name}__head`;
-		_list.className = `${name}__list`;
+		_wrapper.className = `${select.className} ${props.name}`;
+		_head.className = `${props.name}__head`;
+		_list.className = `${props.name}__list`;
 	
 		select.style.display = 'none';
 		select.removeAttribute('class');
@@ -62,28 +68,30 @@ export const selectTweaker = (items, name = 'select') => {
 		_head.textContent = options[0].textContent;
 
 		for (let k = 0; k < options.length; k++) {
-			_list.insertAdjacentHTML('beforeend', `<li class="${name}__item" data-value="${options[k].value}">${options[k].text}</li>`);
+			_list.insertAdjacentHTML('beforeend', `<li class="${props.name}__item" data-value="${options[k].value}">${options[k].text}</li>`);
 		}
 		
-		_head.addEventListener('click', () => _wrapper.classList.toggle(`${name}_opened`));
+		_head.addEventListener('click', () => _wrapper.classList.toggle(`${props.name}_opened`));
 		
 		[..._list.children].forEach((item, i) => {
 			i || item.classList.add(currentClass);
 
 			item.addEventListener('click', () => {
-				_wrapper.classList.remove(`${name}_opened`);
+				_wrapper.classList.remove(`${props.name}_opened`);
 				_head.textContent = item.textContent;
 				select.value = item.getAttribute('data-value');
 				
 				[..._list.children].forEach(ch => ch.classList.remove(currentClass));
 				item.classList.add(currentClass);
+				
+				if (typeof props.select === 'function') props.select.call(_wrapper);
 			});
 		});
 	
 		['click','touchstart'].forEach(event => {
 			document.addEventListener(event, e => { 
 				if (!_wrapper.contains(e.target)) 
-					_wrapper.classList.remove(`${name}_opened`);
+					_wrapper.classList.remove(`${props.name}_opened`);
 			}, { passive: false });
 		});
 	});

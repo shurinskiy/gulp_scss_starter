@@ -8,7 +8,7 @@
 * 
 * @результирующая разметка
 * 
-<div class="someblock clock">
+<div class="someblock clock" data-date="Mar 25, 2024 20:32:00">
 	<div className="clock__digit"></div>
 	<div className="clock__digit"></div>
 	<div className="clock__digit"></div>
@@ -66,7 +66,7 @@
 import { countdownTimer } from "../../js/libs/countdownTimer";
 countdownTimer(document.querySelector('.someblock'), { 
 	class: 'timer',
-	date: 'Mar 25, 2024 20:32:00',
+	// date: 'Mar 25, 2024 20:32:00',
 	types: 'd,h,m,s',
 	effectClass: 'flipped',
 	digitWrapper: true,
@@ -92,7 +92,8 @@ export const countdownTimer = (element, options = {}) => {
 			}
 
 			this.$shell = element;
-			this.rest = new Date(this.options.date).getTime();
+			this.date = this.$shell.dataset.date || this.options.date;
+			this.rest = new Date(this.date).getTime();
 			this.types = this.options.types.split(',');
 			this.diff = this.rest - new Date();
 			this.interval = null;

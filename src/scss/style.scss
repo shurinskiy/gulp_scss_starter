@@ -27,15 +27,15 @@ $breakpoints: (
 );
 
 
-// @include font-face("Montserrat-ExtraLight", "DM", 100);
-// @include font-face("Montserrat-ExtraBold", "DM", 800);
-// @include font-face("Montserrat-SemiBold", "DM", 600);
-// @include font-face("Montserrat-Regular", "DM", 400);
-// @include font-face("Montserrat-Medium", "DM", 500);
-// @include font-face("Montserrat-Light", "DM", 300);
-// @include font-face("Montserrat-Black", "DM", 900);
-// @include font-face("Montserrat-Bold", "DM", 700);
-// @include font-face("Montserrat-Thin", "DM", 200);
+// @include font-face("Montserrat-ExtraLight", "MR", 200);
+// @include font-face("Montserrat-ExtraBold", "MR", 800);
+// @include font-face("Montserrat-SemiBold", "MR", 600);
+// @include font-face("Montserrat-Regular", "MR", 400);
+// @include font-face("Montserrat-Medium", "MR", 500);
+// @include font-face("Montserrat-Light", "MR", 300);
+// @include font-face("Montserrat-Black", "MR", 900);
+// @include font-face("Montserrat-Bold", "MR", 700);
+// @include font-face("Montserrat-Thin", "MR", 100);
 
 // @import "../../node_modules/swiper/swiper";
 
@@ -54,7 +54,8 @@ $breakpoints: (
 
 
 body, html {
-	scrollbar-gutter: stable;
+	// scrollbar-gutter: stable;
+	// scroll-behavior: smooth;	
 	box-sizing: border-box;
 	background-color: #fafafa;
 	font-size: var(--size);
