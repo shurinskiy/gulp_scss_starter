@@ -5,6 +5,7 @@
 		"postinstall": "",
 		"bem": "bemtree-from-html",
 		"start": "gulp watch --dev --sync",
+		"icons": "gulp icons",
 		"remote": "gulp watch --remote",
 		"build": "gulp build",
 		"deploy-all": "gulp deploy --all",
@@ -61,6 +62,6 @@
 		"from": "src/**/*.html",
 		"to": "src/blocks",
 		"js": "src/js/blocks.js",
-		"omit": "@@,js-,active,opened,svg,icon-box"
+		"omit": "@@,js-,active,opened,svg,sprite,icon-box"
 	}
 }

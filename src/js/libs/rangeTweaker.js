@@ -20,7 +20,7 @@
 		<input type="number">
 		<input type="number">
 	</div>
-	<div class="range__slider">
+	<div class="range__slider" data-start-min="0" data-start-max="7500" data-price-max="10000">
 		<input type="range" min="0" max="10000" step="100">
 		<input type="range" min="0" max="10000" step="100">
 		<span style="left: 25%; right: 25%;"></span>
@@ -41,15 +41,16 @@ rangeTweaker(document.querySelectorAll('.someblock'), {
 */
 
 export const rangeTweaker = (item, options = {}) => {
+		
 	class Range {
 		constructor(item, options) {
 			if(!item || !item instanceof Element) return;
 
 			this.options = {
 				class: 'range',
-				maxPrice: 10000,
-				startMin: 2500,
-				startMax: 7500,
+				startMin: item.dataset.startMin || 1000,
+				startMax: item.dataset.startMax || 7500,
+				maxPrice: item.dataset.priceMax || 10000,
 				input: true,
 				step: 100,
 				gap: 1000,
