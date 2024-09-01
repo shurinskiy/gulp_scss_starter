@@ -73,8 +73,8 @@
 *	g = log --graph --abbrev-commit --decorate --all --format=format:'%C(bold blue)%h%C(reset) - %C(bold cyan)%aD%C(dim white) - %an%C(reset) %C(bold green)(%ar)%C(reset)%C(bold yellow)%d%C(reset)%n %C(white)%s%C(reset)'
 *	br = branch
 *	ch = checkout
-*   cm = commit -am
-*   psh = !git push --set-upstream origin $(git rev-parse --abbrev-ref HEAD)
+*	cm = commit -am
+*	psh = !git push --set-upstream origin $(git rev-parse --abbrev-ref HEAD)
 
 > Это позволит вместо полной записи команд в консоли, использовать короткие альясы - git st
 
