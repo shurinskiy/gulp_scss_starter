@@ -34,10 +34,15 @@ makeModalFrame({
 	class: 'modal', 
 	open: function(modal) {
 		scrollLock.disablePageScroll();
+		
 		Inputmask({ 
 			"mask": "+7 (999) 999-99-99", 
 			showMaskOnHover: false 
 		}).mask(this.querySelectorAll('input[type="tel"]'));
+
+		if (modal.slideshow) {
+			this.addEventListener('click', (e) => modalFrame.move());
+		}
 	},
 	close: function() {
 		scrollLock.enablePageScroll();
@@ -142,18 +147,22 @@ export const makeModalFrame = function(props = {}) {
 			
 			[...document.querySelectorAll(`[rel="${rel}"]`)].map(item => {
 				const data = item.dataset[`${this.props.class}`];
+				const source = item.querySelector('img, video');
 				let child;
-
+				
 				if (!data) {
-					child = item.querySelector('img, video').cloneNode();
+					child = source.cloneNode();
 				} else {
 					child = document.createElement('img');
 					child.src = data;
 				}
 				
 				if (child.src !== current.src) {
+					Object.assign(child.dataset, source.dataset);
 					this.content.appendChild(child);
 					counter++;
+				} else {
+					Object.assign(current.dataset, source.dataset);
 				}
 			});
 
@@ -178,13 +187,6 @@ export const makeModalFrame = function(props = {}) {
 	
 				prev.addEventListener('click', () => this.move(-1));
 				next.addEventListener('click', () => this.move());
-	
-				this.items.forEach(item => {
-					item.addEventListener('click', () => { 
-						if (item.tagName.toUpperCase() !== 'VIDEO')
-							this.move(); 
-					});
-				});
 
 				this.slideshow = true;
 			}

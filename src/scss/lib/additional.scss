@@ -1,3 +1,5 @@
+@use "sass:meta";
+@use "sass:string";
 @use 'sass:math';
 
 $basesize: 16; 
@@ -7,27 +9,27 @@ $images-path: "images/";
 
 // Замена подстроки в строке
 @function str-replace($string, $search, $replace: '') {
-	$index: str-index($string, $search);
+	$index: string.index($string, $search);
 	@if $index {
-		@return str-slice($string, 1, $index - 1) + $replace +
-		str-replace(str-slice($string, $index +
-		str-length($search)), $search, $replace);
+		@return string.slice($string, 1, $index - 1) + $replace +
+		str-replace(string.slice($string, $index +
+		string.length($search)), $search, $replace);
 	}
 	@return $string;
 }
 
 // Убрать все пробелы из строки
 @function str-remove-whitespace($str) {
-	@while (str-index($str, ' ') != null) {
-		$index: str-index($str, ' ');
-		$str: "#{str-slice($str, 0, $index - 1)}#{str-slice($str, $index + 1)}";
+	@while (string.index($str, ' ') != null) {
+		$index: string.index($str, ' ');
+		$str: "#{string.slice($str, 0, $index - 1)}#{string.slice($str, $index + 1)}";
 	}
 	@return $str;
 }
 
 // сбросить размерность у чисел
 @function num($number) {
-	@if type-of($number) == 'number' and not unitless($number) {
+	@if meta.type-of($number) == 'number' and not math.is-unitless($number) {
 		@return math.div($number, ($number * 0 + 1));
 	}
 
@@ -86,9 +88,9 @@ $images-path: "images/";
 	$encoded:'';
 	$slice: 2000;
 	$index: 0;
-	$loops: ceil(math.div(str-length($svg), $slice));
+	$loops: math.ceil(math.div(string.length($svg), $slice));
 	@for $i from 1 through $loops {
-		$chunk: str-slice($svg, $index, $index + $slice - 1);
+		$chunk: string.slice($svg, $index, $index + $slice - 1);
 		$chunk: str-replace($chunk,'"','\'');
 		$chunk: str-replace($chunk,'<','%3C');
 		$chunk: str-replace($chunk,'>','%3E');
