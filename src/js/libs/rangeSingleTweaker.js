@@ -18,6 +18,7 @@ export const rangeSingleTweaker = (item, options = {}) => {
 			this.$progress = document.createElement('span');
 			
 			this.render();
+			this.progress();
 			this.init();
 		}
 
@@ -25,7 +26,7 @@ export const rangeSingleTweaker = (item, options = {}) => {
 			if (this.$range.type !== 'range') return;
 			const previous = this.$range.previousElementSibling;
 			
-			this.$wrapper.classList.add(this.$range.className, this.options.class);
+			this.$wrapper.className = `${this.$range.className} ${this.options.class}`;
 			Object.assign(this.$wrapper.dataset, this.$range.dataset);
 
 			Object.keys(this.$range.dataset).forEach(dataKey => {
@@ -41,14 +42,12 @@ export const rangeSingleTweaker = (item, options = {}) => {
 		}
 
 		progress() {
-			const val = Math.min(this.$value.value, this.options.max);
+			const val = Math.min(this.$range.value, this.options.max);
 			const offset = ((val - this.options.min) / (this.options.max - this.options.min) * 100).toFixed(2);
 			this.$progress.style.setProperty("width", `${offset}%`);
 		}
 		
 		init() {
-			console.log(this.$range.value);
-			
 			this.$range.addEventListener('input', (e) => {
 				this.$value.value = Math.min(+e?.currentTarget.value, this.options.max);
 				this.progress.call(this);

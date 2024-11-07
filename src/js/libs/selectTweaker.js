@@ -80,6 +80,7 @@ export const selectTweaker = (items, setting = {}) => {
 				_wrapper.classList.remove(`${props.name}_opened`);
 				_head.textContent = item.textContent;
 				select.value = item.getAttribute('data-value');
+				select.dispatchEvent(new Event("change"));
 				
 				[..._list.children].forEach(ch => ch.classList.remove(currentClass));
 				item.classList.add(currentClass);
