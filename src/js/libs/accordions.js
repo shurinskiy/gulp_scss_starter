@@ -25,7 +25,7 @@ import { slideUp, slideDown, slideToggle } from "./helpers";
 * @вызов (с уточнением контекста):
 *
 import { smoothAccordion } from "../../js/libs/accordions";
-document.querySelectorAll('.accordeon').forEach((c) => {
+document.querySelectorAll('.accordeon').forEach((accordeon) => {
 	smoothAccordion(accordeon.querySelectorAll('.accordeon__head'), { 
 		events: 'click, mouseenter',
 		cls: 'active',

@@ -124,6 +124,7 @@ export const getHeight = (el) => {
 export const slideUp = (el, options = {}) => {
 	if ((el.style.transitionDuration && el.style.transitionProperty) || window.getComputedStyle(el).display === 'none') return;
 
+	el.style.display = 'block';
 	const duration = options.duration || 500;
 	const opacity = options.opacity && { opacity: 0 };
 
@@ -154,7 +155,7 @@ export const slideUp = (el, options = {}) => {
 		el.style.display = 'none';
 		
 		if (typeof options.callback === 'function') 
-			return callback.call(el);
+			return options.callback.call(el);
 	}, duration);
 }
 
@@ -203,7 +204,7 @@ export const slideDown = (el, options = {}) => {
 		el.style.removeProperty('transition-property');
 
 		if (typeof options.callback === 'function') 
-			return callback.call(el);
+			return options.callback.call(el);
 	}, duration);
 }
 

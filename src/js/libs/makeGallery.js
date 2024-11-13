@@ -83,6 +83,8 @@ export const makeGallery = (items, options = {}) => {
 		}
 		
 		render() {
+			const previous = this.$frame.previousElementSibling;
+
 			this.$wrapper.className = `${this.$frame.className} ${this.options.class}`;
 			this.$thumbs.className = `${this.options.class}__thumbs`;
 			this.$frame.className = `${this.options.class}__frame`;
@@ -103,7 +105,7 @@ export const makeGallery = (items, options = {}) => {
 				}
 			});
 
-			this.$frame.parentNode.append(this.$wrapper);
+			(previous) ? previous.after(this.$frame) : this.$frame.parentNode.prepend(this.$wrapper);
 			this.$wrapper.append(this.$frame);
 			
 			if(this.options.thumbnails) {

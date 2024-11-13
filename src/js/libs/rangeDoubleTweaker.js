@@ -20,7 +20,7 @@
 		<input type="number">
 		<input type="number">
 	</div>
-	<div class="range__slider" data-start-min="0" data-start-max="7500" data-price-max="10000">
+	<div class="range__slider" data-range-start-min="0" data-range-start-max="7500" data-range-max="10000">
 		<input type="range" min="0" max="10000" step="100">
 		<input type="range" min="0" max="10000" step="100">
 		<span style="left: 25%; right: 25%;"></span>
@@ -30,13 +30,13 @@
 * @вызов:
 * 
 import { rangeDoubleTweaker } from "../../js/libs/rangeDoubleTweaker";
-rangeDoubleTweaker(document.querySelectorAll('.someblock'), {
-	maxPrice: 10000,
-	startMin: 2500,
-	startMax: 7500,
-	input: false,
-	step: 100,
-	gap: 1000
+rangeDoubleTweaker(document.querySelector('.someblock'), {
+	rangeMax: 10000,
+	rangeStartMin: 2500,
+	rangeStartMax: 7500,
+	rangeStep: 100,
+	rangeGap: 1000,
+	input: false
 });
 */
 
@@ -48,12 +48,12 @@ export const rangeDoubleTweaker = (item, options = {}) => {
 
 			this.options = {
 				class: 'range',
-				startMin: item.dataset.startMin || 1000,
-				startMax: item.dataset.startMax || 7500,
-				maxPrice: item.dataset.priceMax || 10000,
+				startMin: +item.dataset?.rangeStartMin || 1000,
+				startMax: +item.dataset?.rangeStartMax || 7500,
+				maxPrice: +item.dataset?.rangeMax || 10000,
+				step: +item.dataset?.rangeStep || 100,
+				gap: +item.dataset?.rangeGap || 1000,
 				input: true,
-				step: 100,
-				gap: 1000,
 				...options
 			};
 
