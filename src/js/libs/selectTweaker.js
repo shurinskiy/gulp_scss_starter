@@ -50,6 +50,7 @@ export const selectTweaker = (items, setting = {}) => {
 		
 		const _wrapper = document.createElement('div');
 		const _head = document.createElement('div');
+		const _body = document.createElement('div');
 		const _list = document.createElement('ul');
 
 		for(let data in select.dataset)
@@ -57,13 +58,15 @@ export const selectTweaker = (items, setting = {}) => {
 
 		_wrapper.className = `${select.className} ${props.name}`;
 		_head.className = `${props.name}__head`;
+		_body.className = `${props.name}__body`;
 		_list.className = `${props.name}__list`;
 	
 		select.style.display = 'none';
 		select.removeAttribute('class');
 		
 		(previous) ? previous.after(_wrapper) : select.parentNode.prepend(_wrapper);
-		_wrapper.append(select, _head, _list);
+		_body.append(_list);
+		_wrapper.append(select, _head, _body);
 		
 		_head.textContent = options[0].textContent;
 
