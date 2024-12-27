@@ -71,7 +71,7 @@ $images-path: "images/";
 } 
   	
 // сохранять пропрорции 
-@mixin aspect-ratio($w, $h) { 
+@mixin aspect-ratio($w: 1, $h: 1) { 
 	display: block; 
 	position: relative; 
 	$ratio: calc($h / $w); 
@@ -237,6 +237,7 @@ $images-path: "images/";
 %reset-button {
 	@extend %reset-input;
 	text-decoration: none;
+	width: fit-content;
 	cursor: pointer;
 	color: inherit;
 }

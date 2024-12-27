@@ -21,7 +21,13 @@
 	
 	&__half {
 		flex-shrink: 0;
-		max-width: calc(50% - var(--gap) / 2);
 		width: calc(var(--container) / 2 );
+		max-width: calc(50% - var(--gap) / 2);
+	}
+
+	&__full {
+		flex-shrink: 0;
+		width: calc(var(--container));
+		max-width: calc(100% - var(--gap) / 2);
 	}
 }

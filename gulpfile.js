@@ -5,6 +5,7 @@ const isRemote = process.argv.indexOf('--remote') !== -1;
 const isSync = process.argv.indexOf('--sync') !== -1;
 const isDev = process.argv.indexOf('--dev') !== -1;
 const isProd = !isDev;
+const version = +isProd && Date.now();
 
 // console.log(JSON.stringify($));
 let pckg = require('./package.json');
@@ -41,9 +42,9 @@ let pth = {
 		js: './src/js/common.js',
 		css: './src/scss/style.scss',
 		scss: './src/scss/lib/',
-		img: './src/images/**/!(icon-*.svg|shape-*.svg)',
-		shp: './src/images/**/shape-*.svg',
-		icn: './src/images/**/icon-*.svg',
+		// img: './src/images/**/!(icon-*.svg|shape-*.svg)',
+		img: './src/images/!(icons){,/**}',
+		icn: './src/images/icons/**/*.svg',
 		fnts: './src/fonts/**/*.*',
 		tmpl: './src/templates/'
 	},
@@ -51,7 +52,8 @@ let pth = {
 		html: './src/**/*.html',
 		js: ['./src/js/**/*.js','./src/blocks/**/(*.js|*.json)'],
 		css: ['./src/scss/**/*.scss','./src/blocks/**/*.scss'],
-		img: './src/images/**/!(icon-*.svg|shape-*.svg)',
+		img: './src/images/!(icons){,/**}',
+		icn: './src/images/icons/**/*.svg',
 		fnts: './src/fonts/**/*.*'
 	}
 };
@@ -93,6 +95,16 @@ function html() {
 	return gulp.src(pth.src.html)
 		.pipe($.fileInclude({ prefix: '@@', basepath: pth.src.tmpl }))
 		.on('error', swallowError)
+		.pipe($.if(isProd, $.typograf({
+			locale: ['ru', 'en-US'],
+			htmlEntity: { type: 'digit' },
+			safeTags: [
+				['<\\?php', '\\?>'],
+				['<no-typography>', '</no-typography>'],
+			],
+		})))
+		.on('error', swallowError)
+		.pipe($.replace(/(\.(css|js)\?v=)\d+\b/g, `$1${version}`))
 		.pipe(gulp.dest(pth.pbl.html))
 		.pipe($.if(isSync, $.browserSync.stream()));
 }
@@ -147,7 +159,7 @@ function icons() {
 			symbol: {
 				dest: './',
 				sprite: '_sprite.svg',
-				example: true
+				example: ! isProd
 			}
 		}
 	}))
@@ -203,12 +215,12 @@ function watch() {
 	gulp.watch(pth.wtch.html, html);
 	gulp.watch(pth.wtch.css, styles);
 	gulp.watch(pth.wtch.img, images);
+	gulp.watch(pth.wtch.icn, icons);
 	gulp.watch(pth.wtch.fnts, fonts);
 }
 
-const build = gulp.series(clear, gulp.parallel(html, js, jslib, styles, images, fonts));
+const build = gulp.series(clear, gulp.parallel(html, js, jslib, styles, images, icons, fonts));
 
 exports.build = build;
-exports.icons = icons;
 exports.watch = gulp.series(build, watch);
 exports.deploy = gulp.series(build, deploy);
