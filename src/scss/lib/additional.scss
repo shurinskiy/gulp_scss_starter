@@ -104,6 +104,31 @@ $images-path: "images/";
 	@return url("data:image/svg+xml;charset=utf8,#{$encoded}");
 }
 
+// плавное изменение размера на заданном диапазоне ширины экрана (без медиазапросов, через clamp с преобразованием в rem)
+@function fluid($max: 100, $min: 10, $maxViewportWidth: 1440, $minViewportWidth: 480) {
+	$maxSize: math.div($max, 16);
+	$minSize: math.div($min, 16);
+	$maxWidth: math.div($maxViewportWidth, 16);
+	$minWidth: math.div($minViewportWidth, 16);
+  
+	$slope: math.div(($maxSize - $minSize), ($maxWidth - $minWidth));
+	$yAxisIntersection: -$minWidth * $slope + $minSize;
+  
+	@return clamp(
+		#{$minSize * 1rem},
+		#{$yAxisIntersection * 1rem} + #{$slope * 100vw},
+		#{$maxSize * 1rem}
+	);
+}
+
+// преобразование пикселей в rem
+@function rem($pixel) {
+	@if math.is-unitless($pixel) {
+		@return math.div($pixel, 16) + rem;
+	}
+}
+
+
 // спрятать элемент
 @mixin hide {
 	appearance: none;

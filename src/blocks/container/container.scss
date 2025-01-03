@@ -3,31 +3,25 @@
 	margin-left: auto;
 	margin-right: auto;
 	box-sizing: border-box;
-	max-width: var(--container);
-	width: calc(100% - var(--gap) * 2);
-	
-	&_right, &_left {
-		width: calc(100% - var(--gap));
-		max-width: calc(100% - (100% - var(--container)) / 2);
-	}
+	width: min(var(--container), calc(100% - var(--gap) * 2));
 	
 	&_right {
+		width: min(calc(100% - var(--gap)), calc(100% - (100% - var(--container)) / 2));
 		margin-right: unset;
 	}
 	
 	&_left {
+		width: min(calc(100% - var(--gap)), calc(100% - (100% - var(--container)) / 2));
 		margin-left: unset;
 	}
 	
 	&__half {
 		flex-shrink: 0;
-		width: calc(var(--container) / 2 );
-		max-width: calc(50% - var(--gap) / 2);
+		width: min(calc(var(--container) / 2), 50%);
 	}
 
 	&__full {
 		flex-shrink: 0;
-		width: calc(var(--container));
-		max-width: calc(100% - var(--gap) / 2);
+		width: min(var(--container), 100%);
 	}
 }

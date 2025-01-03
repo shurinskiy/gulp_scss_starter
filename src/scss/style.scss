@@ -79,3 +79,27 @@ body, html {
 p { margin-bottom: 10px; }
 strong { font-weight: bold; }
 em { font-style: italic; }
+
+
+.mb1 { margin-bottom: 100px; }
+.mb2 { margin-bottom: 80px; }
+.mb3 { margin-bottom: 60px; }
+.mb4 { margin-bottom: 40px; }
+.mb5 { margin-bottom: 30px; }
+
+
+@include media('<=md') {
+	.mb1 { margin-bottom: 80px; }
+	.mb2 { margin-bottom: 60px; }
+	.mb3 { margin-bottom: 40px; }
+	.mb4 { margin-bottom: 30px; }
+	.mb5 { margin-bottom: 20px; }
+}
+
+@include media('<=xxs') {
+	.mb1 { margin-bottom: 60px; }
+	.mb2 { margin-bottom: 40px; }
+	.mb3 { margin-bottom: 30px; }
+	.mb4 { margin-bottom: 20px; }
+	.mb5 { margin-bottom: 15px; }
+}
