@@ -25,6 +25,7 @@ if (sticky && items) {
 	scrollBasedToggle(sticky, items, { 
 		current: 'current',
 		active: 'actuve', 
+		global: 'scroll',
 		first: false, 
 	});
 }
@@ -36,12 +37,21 @@ if (sticky && items) {
 * active - класс активного элемента
 * current - класс текущего элемента
 * first - убирать или нет классы первого элемента при полной прокрутке вверх
+* global - создать у контейнера css переменную с этим именем и числовым
+* значением от 0 до 100, основанном на скролле всего блока
+* local - создать у каждого элемента css переменную от 0 до 100, основанную
+* на скролле только для этого элемента
 */
 
 export const scrollBasedToggle = (sticky, items, options = {}) => {
-	const current = options.current || 'current';
-	const active = options.active || 'active';
-	const first = options.first || false;
+	const {
+		current = 'current',
+		active = 'active',
+		global = false,
+		local = false,
+		first = false
+	} = options;
+
 	const name = sticky.className.split(' ')[0];
 	const _wrapper = document.createElement('div');
 
@@ -49,29 +59,54 @@ export const scrollBasedToggle = (sticky, items, options = {}) => {
 	sticky.parentNode.append(_wrapper);
 	_wrapper.append(sticky);
 
-	Object.assign(sticky.style, {
-		position: 'sticky',
-		top: 0
-	});
+	Object.assign(sticky.style, { position: 'sticky', top: 0 });
 
 	if (items.length) {
-		const classToggle = (items, outer, active) => {
-			const box = outer.getBoundingClientRect();
-			const step = Math.floor(Math.abs(box.top) / outer.scrollHeight * (items.length + 1));
-			
-			if (box.top < 0 && box.bottom - window.innerHeight > 0) {
-				for (let i = 0; i < items.length; i++) {
-					items[i].classList[(i <= step) ? 'add':'remove'](`${active}`);
-					items[i].classList.remove(`${current}`);
-				}
-				items[step].classList.add(`${current}`);
+		let isTicking = false;
 
-			} else if (box.top > 0 && first) {
-				items[0].classList.remove(`${active}`, `${current}`);
+		const classToggle = (items, outer) => {
+			const box = outer.getBoundingClientRect();
+			const scrollTop = Math.abs(box.top);
+			const maxScroll = outer.scrollHeight - window.innerHeight;
+			const rest = scrollTop / maxScroll * items.length;
+			const step = Math.min(Math.trunc(rest), items.length - 1);
+			let globalPercentage = global && Math.round((scrollTop / maxScroll) * 100);
+
+			if (box.top < 0 && box.bottom - window.innerHeight > 0) {
+				items.forEach((item, i) => {
+					item.classList.remove(`${current}`);
+					item.classList.toggle(active, (i <= step));
+					local && item.style.setProperty(`--${local}`, +(i <= step) && 100);
+				});
+
+				items[step].classList.add(`${current}`);
+				local && items[step].style.setProperty(`--${local}`, Math.floor((rest*100) % 100));
+
+			} else if (box.top > 0) {
+				first && items[0].classList.remove(`${active}`, `${current}`);
+				local && items[0].style.setProperty(`--${local}`, 0)
+				globalPercentage = 0;
+				
+			} else if (scrollTop > maxScroll) {
+				local && items[items.length - 1].style.setProperty(`--${local}`, 100)
+				globalPercentage = 100;
+			}
+
+			global && sticky.style.setProperty(`--${global}`, globalPercentage);
+		};
+
+		const onScroll = () => {
+			if (!isTicking) {
+				isTicking = true;
+
+				requestAnimationFrame(() => {
+					classToggle(items, _wrapper);
+					isTicking = false;
+				});
 			}
 		};
-		
-		window.addEventListener('scroll', () => classToggle(items, _wrapper, active), { capture: true, passive: true });
+
+		window.addEventListener('scroll', onScroll, { capture: true, passive: true });
 	}
 }
 

@@ -27,7 +27,7 @@
 		"@babel/core": "^7.21.8",
 		"@babel/preset-env": "^7.21.5",
 		"babel-loader": "^9.1.2",
-		"bemtree-from-html": "^1.0.11",
+		"bemtree-from-html": "^2.0.0",
 		"browser-sync": "^2.29.1",
 		"del": "^6.0.0",
 		"fancy-log": "^2.0.0",
@@ -42,7 +42,7 @@
 		"gulp-newer": "^1.4.0",
 		"gulp-replace": "^1.1.4",
 		"gulp-sass": "^5.1.0",
-		"gulp-sass-glob": "^1.1.0",
+		"gulp-glob-sass": "^1.0.3",
 		"gulp-sourcemaps": "^3.0.0",
 		"gulp-svg-sprite": "^2.0.3",
 		"gulp-ttf2woff2": "^4.0.1",
@@ -64,6 +64,8 @@
 		"from": "src/**/*.html",
 		"to": "src/blocks",
 		"js": "src/js/blocks.js",
-		"omit": "@@,js-,active,opened,svg,sprite,icon-box,swiper,mb"
+		"omit": "@@,js-,active,opened,svg,sprite,icon-box,swiper,mb",
+		"prefix": "@use 'lib/additional.scss' as *;",
+		"suffix": "$self: &;"
 	}
 }

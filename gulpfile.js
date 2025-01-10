@@ -112,7 +112,7 @@ function html() {
 function styles() {
 	return gulp.src(pth.src.css)
 		.pipe($.if(isDev, $.sourcemaps.init()))
-		.pipe($.sassGlob())
+		.pipe($.globSass())
 		.pipe(sass())
 		.on('error', swallowError)
 		.pipe($.autoprefixer({ 
