@@ -1,5 +1,18 @@
-@import "lib/additional.scss"; 
-@include reset(); 
+@use 'lib' as * with(
+	$breakpoints: (
+		'xxxs': 360.98px,
+		'xxs': 480.98px,
+		'xs': 640.98px,
+		'sm': 780.98px,
+		'md': 960.98px,
+		'lg': 1100.98px,
+		'xlg': 1280.98px,
+		'xxlg': 1440.98px,
+		'xxxlg': 1680.98px,
+		'xxxxlg': 1920.98px
+	)
+);
+@use "../blocks/**/*.scss";
 
 // Browsersync mark
 #__bs_notify__ { 
@@ -9,22 +22,6 @@
 
 // Include breakpoints badge
 body { @include screen-media(); }
-
-// Import media-query helper
-@import "../../node_modules/include-media/dist/_include-media.scss";
-
-$breakpoints: (
-	'xxxs': 360px,
-	'xxs': 480px,
-	'xs': 640px,
-	'sm': 780px,
-	'md': 960px,
-	'lg': 1100px,
-	'xlg': 1280px,
-	'xxlg': 1440px,
-	'xxxlg': 1680px,
-	'xxxxlg': 1920px
-);
 
 
 // @include font-face("Montserrat-ExtraLight", "MR", 200);
@@ -38,9 +35,6 @@ $breakpoints: (
 // @include font-face("Montserrat-Thin", "MR", 100);
 
 // @import "../../node_modules/swiper/swiper";
-
-// Import BEM blocks scss
-@import "../blocks/**/*.scss";
 
 :root {
 	--size: #{$basesize}px;

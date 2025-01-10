@@ -1,0 +1,16 @@
+:root {
+	--size: 16px;
+	--light: #FBF2DF;
+	--beige: #FBF2DF;
+	--text: #161C26;
+	--orange: #D69A37;
+	--green: #3DBE75;
+	--blue: #113859;
+	--blue-rgb: 17, 56, 89;
+	--container: 1400px;
+	--gap: 24px;
+	
+	@media screen and (max-width: 480px) {
+		--gap: 16px;
+	}
+}

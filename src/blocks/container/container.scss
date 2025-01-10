@@ -1,3 +1,5 @@
+@use 'lib' as *;
+
 .container {
 	$self: &;
 	margin-left: auto;

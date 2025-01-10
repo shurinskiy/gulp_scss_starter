@@ -65,7 +65,7 @@
 		"to": "src/blocks",
 		"js": "src/js/blocks.js",
 		"omit": "@@,js-,active,opened,svg,sprite,icon-box,swiper,mb",
-		"prefix": "@use 'lib/additional.scss' as *;",
+		"prefix": "@use 'lib' as *;",
 		"suffix": "$self: &;"
 	}
 }
