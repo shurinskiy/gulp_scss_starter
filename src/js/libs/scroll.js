@@ -14,6 +14,34 @@
 	<div class="scroll__item"></div>
 </div>
 * 
+* @стили:
+* 
+* &__item {
+* 	height: 1px;
+* 	width: 100%;
+* 	overflow: hidden;
+* 	position: absolute;
+* 	bottom: 0;
+* 	will-change: scroll-position;
+* 
+* 	img {
+* 		display: block;
+* 		width: 100%;
+* 		height: 100%;
+* 		object-fit: cover;
+* 	}
+* 
+* 	&.active {
+* 		height: 100%;
+* 		scale: calc(1 + (0.5 - 1) * (var(--scroll-prev) * 0.01)); // плавное изменение от 1 до 0.5
+* 		opacity: calc(1 - var(--scroll-prev) * 0.01); // плавное изменение от 0 до 1
+* 	}
+* 	
+* 	&.current {
+* 		height: calc(var(--scroll-curr) * 1%);
+* 		border-radius: calc(150px - (var(--scroll-curr) * 0.01px) * 150px); // плавное изменение от 0 до 150px
+* 	}
+* }
 * 
 * @вызов:
 * 
@@ -23,9 +51,11 @@ const items = sticky?.querySelectorAll('.scroll__item');
 
 if (sticky && items) {
 	scrollBasedToggle(sticky, items, { 
-		current: 'current',
-		active: 'actuve', 
-		global: 'scroll',
+		currentClass: 'current',
+		activeClass: 'actuve', 
+		overallProp: 'scroll-all',
+		currentProp: 'scroll-curr',
+		previousProp: 'scroll-prev',
 		first: false, 
 	});
 }
@@ -34,22 +64,26 @@ if (sticky && items) {
 *
 * sticky - блок содержащий целевые элементы.
 * items - элементы у которых будут переключаться классы.
-* active - класс активного элемента
-* current - класс текущего элемента
-* first - убирать или нет классы первого элемента при полной прокрутке вверх
-* global - создать у контейнера css переменную с этим именем и числовым
+* activeClass - класс активного элемента
+* previousClass - класс предыдущего элемента
+* currentClass - класс текущего элемента
+* overallProp - создать у контейнера css переменную с этим именем и числовым
 * значением от 0 до 100, основанном на скролле всего блока
-* local - создать у каждого элемента css переменную от 0 до 100, основанную
+* currentProp - создать у каждого элемента css переменную от 0 до 100, основанную
 * на скролле только для этого элемента
+* previousProp - создать у предыдущего элемента css переменную от 0 до 100
 */
 
 export const scrollBasedToggle = (sticky, items, options = {}) => {
 	const {
-		current = 'current',
-		active = 'active',
-		global = false,
-		local = false,
-		first = false
+		currentClass = 'current',
+		activeClass = 'active',
+		previousClass = false,
+		previousProp = false,
+		overallProp = false,
+		currentProp = false,
+		stepProp = false,
+		resetClasses = false
 	} = options;
 
 	const name = sticky.className.split(' ')[0];
@@ -70,29 +104,42 @@ export const scrollBasedToggle = (sticky, items, options = {}) => {
 			const maxScroll = outer.scrollHeight - window.innerHeight;
 			const rest = scrollTop / maxScroll * items.length;
 			const step = Math.min(Math.trunc(rest), items.length - 1);
-			let globalPercentage = global && Math.round((scrollTop / maxScroll) * 100);
 
+			let allPercentage = overallProp && Math.round((scrollTop / maxScroll) * 100);
+			let currentPercentage = (currentProp || previousProp) && Math.floor((rest * 100) % 100);
+			let stepPercentage = stepProp && Math.min(Math.round((scrollTop / (maxScroll / items.length)) * 100), 100);
+
+			// Работа, если в экране
 			if (box.top < 0 && box.bottom - window.innerHeight > 0) {
 				items.forEach((item, i) => {
-					item.classList.remove(`${current}`);
-					item.classList.toggle(active, (i <= step));
-					local && item.style.setProperty(`--${local}`, +(i <= step) && 100);
+					const resetValue = +(i < step) && 100;
+
+					item.classList.toggle(activeClass, (i <= step));
+					item.classList.toggle(currentClass, (i == step));
+					previousClass && item.classList.toggle(previousClass, (i == step - 1));
+					previousProp && items[i - 1]?.style.setProperty(`--${previousProp}`, resetValue);
+					currentProp && item.style.setProperty(`--${currentProp}`, resetValue);
 				});
-
-				items[step].classList.add(`${current}`);
-				local && items[step].style.setProperty(`--${local}`, Math.floor((rest*100) % 100));
-
-			} else if (box.top > 0) {
-				first && items[0].classList.remove(`${active}`, `${current}`);
-				local && items[0].style.setProperty(`--${local}`, 0)
-				globalPercentage = 0;
 				
+				previousProp && items[step - 1]?.style.setProperty(`--${previousProp}`, currentPercentage);
+				currentProp && items[step].style.setProperty(`--${currentProp}`, currentPercentage);
+	
+			// Сброс, если выше экрана
+			} else if (box.top > 0) {
+				resetClasses && items[0].classList.remove(activeClass, currentClass);
+				currentProp && items[0].style.setProperty(`--${currentProp}`, 0)
+				allPercentage = stepPercentage = stepPercentage = 0;
+				
+			// Сброс, если ниже экрана
 			} else if (scrollTop > maxScroll) {
-				local && items[items.length - 1].style.setProperty(`--${local}`, 100)
-				globalPercentage = 100;
+				currentProp && items[items.length - 1].style.setProperty(`--${currentProp}`, 100)
+				previousProp && items[items.length - 2]?.style.setProperty(`--${previousProp}`, 100)
+				allPercentage = stepPercentage = stepPercentage = 100;
 			}
 
-			global && sticky.style.setProperty(`--${global}`, globalPercentage);
+			// Переменные контейнера
+			overallProp && sticky.style.setProperty(`--${overallProp}`, allPercentage);
+			stepProp && sticky.style.setProperty(`--${stepProp}`, stepPercentage);
 		};
 
 		const onScroll = () => {
