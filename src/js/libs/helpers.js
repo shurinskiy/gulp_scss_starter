@@ -259,3 +259,19 @@ export const scrollToTop = (item) => {
 		});
 	}
 }
+
+/* 
+* Обновление заданного массива в localStorage
+* @вызов:
+* 
+import { updateLocalStorage } from "../../js/libs/helpers.js";
+updateLocalStorage('myArray', 'item1');
+updateLocalStorage('myArray', 'item1', false);
+* 
+*/
+
+export const updateLocalStorage = (key, item, add = true) => {
+	const storage = JSON.parse(localStorage.getItem(key)) || [];
+	const updated = add ? [...new Set([...storage, item])] : storage.filter(val => val !== item);
+	localStorage.setItem(key, JSON.stringify(updated));
+};

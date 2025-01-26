@@ -61,7 +61,7 @@
 		"workdir": ""
 	},
 	"bemtree": {
-		"from": "src/**/*.html",
+		"from": "src/**/[^-]*.html",
 		"to": "src/blocks",
 		"js": "src/js/blocks.js",
 		"omit": "@@,js-,active,opened,svg,sprite,icon-box,swiper,mb",

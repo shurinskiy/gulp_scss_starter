@@ -52,7 +52,7 @@ let pth = {
 		html: './src/**/*.html',
 		js: ['./src/js/**/*.js','./src/blocks/**/(*.js|*.json)'],
 		css: ['./src/scss/**/*.scss','./src/blocks/**/*.scss'],
-		img: './src/images/!(icons){,/**}',
+		img: ['./src/images/**', '!./src/images/icons/**'],
 		icn: './src/images/icons/**/*.svg',
 		fnts: './src/fonts/**/*.*'
 	}

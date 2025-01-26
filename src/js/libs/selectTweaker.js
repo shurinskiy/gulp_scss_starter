@@ -30,73 +30,101 @@
 * @вызов:
 * 
 import { selectTweaker } from "../../js/libs/selectTweaker";
-selectTweaker(document.querySelectorAll('.someblock__select'), {
+const select = selectTweaker(document.querySelector('.someblock__select'), {
 	name: 'select',
-	select: function() {
-		console.log(this);
+	select: function(i) {
+		console.log(this, i);
 	}
 });
 */
 
-export const selectTweaker = (items, setting = {}) => {
-	let props = { name: 'select', ...setting };
+export const selectTweaker = (items, props = {}) => {
+	class Select {
+		constructor(select, props) {
+			if(!select || select.tagName !== 'SELECT') return;
 
-	[...items].forEach(select => {
-		if (select.closest(`.${props.name}`)) return;
+			this.props = {
+				name: 'select',
+				...props
+			};
 
-		const options = select.querySelectorAll('option');
-		const previous = select.previousElementSibling;
-		const currentClass = `${props.name}__item_current`;
-		
-		const _wrapper = document.createElement('div');
-		const _head = document.createElement('div');
-		const _body = document.createElement('div');
-		const _list = document.createElement('ul');
+			this.select = select;
+			this.options = select.querySelectorAll('option');
+			this.currentClass = `${this.props.name}__item_current`;
+			this.selectedIndex = [...this.options].findIndex(opt => opt.selected);
 
-		for(let data in select.dataset)
-			_wrapper.dataset[`${data}`] = select.dataset[data];
+			this.wrapper = document.createElement('div');
+			this.head = document.createElement('div');
+			this.body = document.createElement('div');
+			this.list = document.createElement('ul');
 
-		_wrapper.className = `${select.className} ${props.name}`;
-		_head.className = `${props.name}__head`;
-		_body.className = `${props.name}__body`;
-		_list.className = `${props.name}__list`;
-	
-		select.style.display = 'none';
-		select.removeAttribute('class');
-		
-		(previous) ? previous.after(_wrapper) : select.parentNode.prepend(_wrapper);
-		_body.append(_list);
-		_wrapper.append(select, _head, _body);
-		
-		_head.textContent = options[0].textContent;
+			this.wrapper.className = `${select.className} ${this.props.name}`;
+			this.head.className = `${this.props.name}__head`;
+			this.body.className = `${this.props.name}__body`;
+			this.list.className = `${this.props.name}__list`;
 
-		for (let k = 0; k < options.length; k++) {
-			_list.insertAdjacentHTML('beforeend', `<li class="${props.name}__item" data-value="${options[k].value}">${options[k].text}</li>`);
+			this.init();
 		}
-		
-		_head.addEventListener('click', () => _wrapper.classList.toggle(`${props.name}_opened`));
-		
-		[..._list.children].forEach((item, i) => {
-			i || item.classList.add(currentClass);
 
-			item.addEventListener('click', () => {
-				_wrapper.classList.remove(`${props.name}_opened`);
-				_head.textContent = item.textContent;
-				select.value = item.getAttribute('data-value');
-				select.dispatchEvent(new Event("change"));
-				
-				[..._list.children].forEach(ch => ch.classList.remove(currentClass));
-				item.classList.add(currentClass);
-				
-				if (typeof props.select === 'function') props.select.call(_wrapper);
-			});
-		});
+		render() {
+			const previous = this.select.previousElementSibling;
+
+			for(let data in this.select.dataset) {
+				this.wrapper.dataset[`${data}`] = this.select.dataset[data];
+				this.select.removeAttribute(`data-${data}`);
+			}
 	
-		['click','touchstart'].forEach(event => {
-			document.addEventListener(event, e => { 
-				if (!_wrapper.contains(e.target)) 
-					_wrapper.classList.remove(`${props.name}_opened`);
-			}, { passive: false });
-		});
-	});
+			(previous) ? previous.after(this.wrapper) : this.select.parentNode.prepend(this.wrapper);
+
+			this.body.append(this.list);
+			this.wrapper.append(this.select, this.head, this.body);
+			this.head.textContent = this.options[this.selectedIndex].textContent;
+			this.select.removeAttribute('class');
+			this.select.style.display = 'none';
+
+			this.list.innerHTML = [...this.options]
+				.map(opt => `<li class="${this.props.name}__item" data-value="${opt.value}">${opt.text}</li>`)
+				.join('\n');
+
+			this.items = [...this.list.children];
+			this.items[this.selectedIndex].classList.add(this.currentClass);
+		}
+
+		update = (i, e) => {
+			e?.preventDefault();
+
+			this.wrapper.classList.remove(`${this.props.name}_opened`);
+			this.head.textContent = this.items[i].textContent;
+			this.select.value = this.items[i].getAttribute('data-value');
+			
+			this.items.forEach(item => item.classList.remove(this.currentClass));
+			this.items[i].classList.add(this.currentClass);
+			
+			e && this.select.dispatchEvent(new Event("change"));
+			e && (typeof this.props.select === 'function') && this.props.select.call(this.wrapper, i);
+		}
+
+		init() {
+			this.render();
+
+			this.head.addEventListener('click', () => this.wrapper.classList.toggle(`${this.props.name}_opened`));
+			this.options.forEach((option, i) => option.addEventListener('click', () => this.update(i)));
+			this.items.forEach((item, i) => item.addEventListener('click', e => this.update(i, e)));
+				
+			['click','touchstart'].forEach(event => {
+				document.addEventListener(event, e => { 
+					if (!this.wrapper.contains(e.target)) 
+						this.wrapper.classList.remove(`${props.name}_opened`);
+				}, { passive: false });
+			});
+		}
+	}
+
+	if (items instanceof NodeList || Array.isArray(items)) {
+		items.forEach((item) => new Select(item, props));
+	} else if (items instanceof HTMLElement) {
+		return new Select(items, props);
+	} else {
+		throw new Error("Invalid input: expected NodeList, HTMLElement, or Array.");
+	}
 }

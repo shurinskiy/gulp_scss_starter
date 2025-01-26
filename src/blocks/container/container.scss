@@ -7,6 +7,11 @@
 	box-sizing: border-box;
 	width: min(var(--container), calc(100% - var(--gap) * 2));
 	
+	&_abs {
+		position: absolute;
+		left: max(var(--gap), calc((100% - var(--container)) / 2));
+	}
+	
 	&_right {
 		width: min(calc(100% - var(--gap)), calc(100% - (100% - var(--container)) / 2));
 		margin-right: unset;

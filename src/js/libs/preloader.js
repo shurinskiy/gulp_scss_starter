@@ -6,7 +6,6 @@
 * 
 * @требуемая разметка:
 * <div class="preloader">
-* 	<div class="preloader__counter"></div>
 * 	<div class="preloader__progress"></div>
 * </div>
 * 
@@ -22,11 +21,10 @@ export const preloadingBar = (options = {}) => {
 	let images = [];
 	const cls = options.class || 'preloader';
 	const area = document.querySelector(options.area) || document;
-	const _wrapper = document.querySelector(`.${cls}`);
-	const _counter = document.querySelector(`.${cls}__counter`);
-	const _progress = document.querySelector(`.${cls}__progress`);
+	const wrapper = document.querySelector(`.${cls}`);
+	const progress = document.querySelector(`.${cls}__progress`);
 
-	if (!_wrapper) return;
+	if (! wrapper) return;
 
 	const getImages = () => {
 		area.querySelectorAll('*:not(script)').forEach((tag) => {
@@ -52,24 +50,23 @@ export const preloadingBar = (options = {}) => {
 
 	const imagesLoaded = () => {
 		let percent = Math.round(100 / images.length * ++ctr);
-
-		if(_counter)
-			_counter.innerText = percent;
 		
-		if(_progress)
-			_progress.style.width = `${percent}%`;
+		if (progress) {
+			progress.style.setProperty('--progress', percent);
+			progress.dataset.count = percent;
+		}
 		
-		if(ctr === images.length) 
-			loadDone();
+		(ctr === images.length) && loadDone();
 	}
 	
 	const loadDone = () => {
-		let computed = getComputedStyle(_wrapper, null);
+		wrapper.classList.add(`${cls}_done`);
+
+		let computed = getComputedStyle(wrapper, null);
 		let delay = parseInt(computed.transitionDuration) * 1000;
-		_wrapper.style.opacity = 0;
 
 		setTimeout(() => { 
-			_wrapper.remove();
+			wrapper.remove();
 		}, delay || 1200);
 	}
 

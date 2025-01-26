@@ -45,12 +45,13 @@ export const menuToggle = (menu, toggles, options = {}) => {
 			if(!menu || !menu instanceof Element || !toggles) return;
 
 			this.options = {
-				class: 'opened',
+				class: false,
 				globalClose: true,
 				...options
 			};
 
 			this._init();
+			this.opened = false;
 		}
 			
 
@@ -60,9 +61,10 @@ export const menuToggle = (menu, toggles, options = {}) => {
 				e.stopPropagation();
 			}
 
-			menu.classList.add(`${this.options.class}`);
+			this.options.class && menu.classList.add(`${this.options.class}`);
+			this.opened = true;
 
-			if (typeof cb === 'function') cb.call(menu);
+			if (typeof cb === 'function') cb.call(menu, e?.currentTarget);
 			return true;
 		}
 		
@@ -70,15 +72,16 @@ export const menuToggle = (menu, toggles, options = {}) => {
 		menuClose(e, cb = this.options.close) {
 			if (e) e.stopPropagation();
 			
-			menu.classList.remove(`${this.options.class}`);
-			menu.removeAttribute('style');
+			this.options.class && menu.classList.remove(`${this.options.class}`);
+			this.opened = false;
 			
-			if (typeof cb === 'function') cb.call(menu);
+			if (typeof cb === 'function') cb.call(menu, e?.currentTarget);
 			return false;
 		}
 	
 		menuToggle(e) {
-			menu.classList.contains(`${this.options.class}`) ? this.menuClose(e) : this.menuOpen(e);
+			// menu.classList.contains(`${this.options.class}`) ? this.menuClose(e) : this.menuOpen(e);
+			this.opened ? this.menuClose(e) : this.menuOpen(e);
 		}
 
 
@@ -96,10 +99,10 @@ export const menuToggle = (menu, toggles, options = {}) => {
 			if(this.options.globalClose) {
 				['click','touchstart'].forEach(event => {
 					document.addEventListener(event, (e) => {
-						const isopen = menu.classList.contains(`${this.options.class}`);
+						// const isopen = menu.classList.contains(`${this.options.class}`);
 						const isself = e.target.closest(`.${menu.className.split(' ')[0]}`);
 
-						if(isopen && !isself && !this._omitToClose(e)) {
+						if(this.opened && !isself && !this._omitToClose(e)) {
 							e.preventDefault();
 							this.menuClose(e);
 						}

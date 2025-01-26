@@ -16,54 +16,109 @@
 		<div class="tab__block"></div>
 		<div class="tab__block"></div>
 	</div>
+	<div class="tab__otherblocks">
+		<a class="active" href="./">One</a>
+		<a href="./">Two</a>
+		<a href="./"><Three/a>
+	</div>
 </div>
 * 
 * @вызов
 * 
 import { driveTabs } from "../../js/libs/driveTabs";
-driveTabs({
+tabs = driveTabs({
 	container: '.tab',
 	controls: '.tab__button',
-	selects: '.tab__block',
-	cls: 'active'
-}, function() {
-	this.classList.add('showing');
-
-	this.addEventListener('animationend', e => {
-		this.classList.remove('showing');
-	}, { once: true });
+	selects: ['.tab__block', '.tab__otherblocks a'],
+	cls: 'active',
+	onInit() {
+		console.log(this);
+	},
+	onClick(i) {
+		console.log(this, i);
+	},
+	onTab(set, i) {
+		console.log(this, set, i);
+	},
+	onTick(i) {
+		console.log(this, i);
+	},
 });
 * 
 */
 
-export const driveTabs = (options = {}, cb) => {
-	const containers = options.container || '.tab';
-	const controls = options.controls || `.${containers}__button`;
-	const selects = [options.selects].flat() || [`.${containers}__block`];
-	const cls = options.cls || 'active';
+export const driveTabs = (props = {}) => {
+	class Tabs {
+		constructor(props) {
+			this.props = {
+				cls: 'active',
+				...props
+			}
 
-	document.querySelectorAll(containers).forEach((container) => {
-		const buttons = container.querySelectorAll(controls);
-		const blocks = selects.map(set => container.querySelectorAll(set));
+			this.container = (this.props.container instanceof Element)
+				? this.props.container
+				: document.querySelector(this.props.container);
 
-		buttons.forEach((button, i) => {
-			button.addEventListener('click', (e) => {
-				e.preventDefault();
+			this.controls = (this.props.controls instanceof NodeList)
+				? this.props.controls
+				: this.container.querySelectorAll(this.props.controls);
 
-				if (! e.target.classList.contains(`${cls}`)) {
-					buttons.forEach((button, i) => {
-						button.classList.remove(`${cls}`);
-						blocks.map(set => set[i].classList.remove(`${cls}`));
-					});
+			this.selects = (this.props.selects instanceof NodeList)
+				? [...[this.props.selects]]
+				: [this.props.selects].flat().map(set => this.container.querySelectorAll(set));
+
+			this.currentActive = [...this.controls].findIndex(ctrl => ctrl.classList.contains(this.props.cls));
+			
+			this.init();
+		}
 		
-					button.classList.add(`${cls}`);
+		setActive = (i, e) => {
+			e?.preventDefault();
 
-					blocks.map(set => {
-						set[i].classList.add(`${cls}`);
-						(typeof cb === 'function') && cb.call(set[i]);
-					});
-				}
+			if (typeof this.props.onClick === 'function' && e)
+				this.props.onClick.call(this, i);
+
+			if (! this.controls[i].classList.contains(this.props.cls)) {
+				this.controls.forEach((button, i) => {
+					button.classList.remove(this.props.cls);
+					this.selects.map(set => set[i].classList.remove(this.props.cls));
+				});
+	
+				this.controls[i].classList.add(this.props.cls);
+
+				this.selects.map(set => {
+					set[i].classList.add(this.props.cls);
+
+					if (typeof this.props.onTab === 'function')
+						this.props.onTab.call(this, set, i);
+				});
+			}
+
+			if (typeof this.props.onTick === 'function')
+				this.props.onTick.call(this, i);
+		}
+
+		move = (direction = 1) => {
+			this.currentActive += direction;
+
+			if (this.currentActive >= this.controls.length) {
+				this.currentActive = 0;
+			} else if(this.currentActive < 0) {
+				this.currentActive = this.controls.length - 1;
+			}
+
+			this.setActive(this.currentActive);
+		}
+
+		init() {
+			this.controls.forEach((button, i) => {
+				button.addEventListener('click', (e) => this.setActive(i, e));
 			});
-		});
-	});
+
+			if (typeof this.props.onInit === 'function')
+				this.props.onInit.call(this);
+		}
+	}
+		
+	return new Tabs(props);
 }
