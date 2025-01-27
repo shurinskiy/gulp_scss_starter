@@ -30,6 +30,7 @@ tabs = driveTabs({
 	container: '.tab',
 	controls: '.tab__button',
 	selects: ['.tab__block', '.tab__otherblocks a'],
+	events: 'click, mouseover',
 	cls: 'active',
 	onInit() {
 		console.log(this);
@@ -52,6 +53,7 @@ export const driveTabs = (props = {}) => {
 		constructor(props) {
 			this.props = {
 				cls: 'active',
+				events: 'click',
 				...props
 			}
 
@@ -68,6 +70,7 @@ export const driveTabs = (props = {}) => {
 				: [this.props.selects].flat().map(set => this.container.querySelectorAll(set));
 
 			this.currentActive = [...this.controls].findIndex(ctrl => ctrl.classList.contains(this.props.cls));
+			this.events = this.props.events.split(',').map(ev => ev.trim());
 			
 			this.init();
 		}
@@ -112,7 +115,9 @@ export const driveTabs = (props = {}) => {
 
 		init() {
 			this.controls.forEach((button, i) => {
-				button.addEventListener('click', (e) => this.setActive(i, e));
+				this.events.forEach(event => {
+					button.addEventListener(event, (e) => this.setActive(i, e));
+				});
 			});
 
 			if (typeof this.props.onInit === 'function')

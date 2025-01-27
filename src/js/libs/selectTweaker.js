@@ -114,7 +114,7 @@ export const selectTweaker = (items, props = {}) => {
 			['click','touchstart'].forEach(event => {
 				document.addEventListener(event, e => { 
 					if (!this.wrapper.contains(e.target)) 
-						this.wrapper.classList.remove(`${props.name}_opened`);
+						this.wrapper.classList.remove(`${this.props.name}_opened`);
 				}, { passive: false });
 			});
 		}
