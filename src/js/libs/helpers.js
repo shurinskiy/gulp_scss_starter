@@ -1,6 +1,3 @@
-/* ======== Вспомогательные функции ======== */
-
-
 // Проверка на объект (не массив)
 export const isObject = (item) => {
 	return (item && typeof item === 'object' && !Array.isArray(item));
@@ -147,8 +144,7 @@ export const slideUp = (el, options = {}) => {
 	}
 		
 	Object.assign(el.style, transition);
-	el.offsetHeight;
-	Object.assign(el.style, set);
+	requestAnimationFrame(() => Object.assign(el.style, set)); // сбросить кэш
 
 	window.setTimeout(() => {
 		el.removeAttribute('style');
@@ -187,8 +183,7 @@ export const slideDown = (el, options = {}) => {
 	}
 
 	Object.assign(el.style, set);
-	el.offsetHeight;
-	Object.assign(el.style, transition);
+	requestAnimationFrame(() => Object.assign(el.style, transition));
 
 	el.style.removeProperty('padding-top');
 	el.style.removeProperty('padding-bottom');
@@ -242,6 +237,7 @@ export const scrollToId = (items) => {
 	});		
 }
 
+
 /* 
 * Плавная прокрутка к верху страницы
 * @вызов:
@@ -260,11 +256,12 @@ export const scrollToTop = (item) => {
 	}
 }
 
+
 /* 
 * Обновление заданного массива в localStorage
 * @вызов:
 * 
-import { updateLocalStorage } from "../../js/libs/helpers.js";
+import { updateLocalStorage } from "../../js/libs/helpers";
 updateLocalStorage('myArray', 'item1');
 updateLocalStorage('myArray', 'item1', false);
 * 
@@ -275,3 +272,37 @@ export const updateLocalStorage = (key, item, add = true) => {
 	const updated = add ? [...new Set([...storage, item])] : storage.filter(val => val !== item);
 	localStorage.setItem(key, JSON.stringify(updated));
 };
+
+
+/* 
+* Простой переключатель классов для аккордeона
+* @вызов:
+* 
+import { accordion } from "../../js/libs/helpers";
+document.querySelectorAll('.accordeon').forEach((accordeon) => {
+	accordion(accordeon.querySelectorAll('.accordeon__head'), {
+		events: 'click, mouseenter',
+		cls: 'active',
+		toggle: false
+	});
+});
+* 
+*/
+
+export const accordion = (items, options = {}) => {
+	const cls = options.cls || 'opened';
+	const events = options.events || 'click';
+	const toggle = options.toggle;
+	
+	events.split(' ').forEach(event => {
+		items.forEach(item => {
+			item.addEventListener(event, function(e) {
+				e.stopPropagation();
+				items.forEach(item => (item != this) && item.classList.remove(`${cls}`));
+			
+				if (this.classList != `${cls}`)
+					this.classList[(toggle) ? 'toggle':'add'](`${cls}`);
+			});
+		});
+	});
+}

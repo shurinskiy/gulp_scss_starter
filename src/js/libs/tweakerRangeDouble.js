@@ -29,8 +29,8 @@
 * 
 * @вызов:
 * 
-import { rangeDoubleTweaker } from "../../js/libs/rangeDoubleTweaker";
-rangeDoubleTweaker(document.querySelector('.someblock'), {
+import { tweakerRangeDouble } from "../../js/libs/tweakerRangeDouble";
+tweakerRangeDouble(document.querySelector('.someblock'), {
 	rangeMax: 10000,
 	rangeStartMin: 2500,
 	rangeStartMax: 7500,
@@ -40,7 +40,7 @@ rangeDoubleTweaker(document.querySelector('.someblock'), {
 });
 */
 
-export const rangeDoubleTweaker = (item, options = {}) => {
+export const tweakerRangeDouble = (item, options = {}) => {
 		
 	class Range {
 		constructor(item, options) {

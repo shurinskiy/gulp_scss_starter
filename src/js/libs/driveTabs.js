@@ -30,7 +30,6 @@ tabs = driveTabs({
 	container: '.tab',
 	controls: '.tab__button',
 	selects: ['.tab__block', '.tab__otherblocks a'],
-	events: 'click, mouseover',
 	cls: 'active',
 	onInit() {
 		console.log(this);

@@ -18,69 +18,84 @@ preloadingBar({ class: 'preloader', area: 'body' });
 
 export const preloadingBar = (options = {}) => {
 	let ctr = 0;
-	let images = [];
+	let media = [];
 	const cls = options.class || 'preloader';
 	const area = document.querySelector(options.area) || document;
 	const wrapper = document.querySelector(`.${cls}`);
 	const progress = document.querySelector(`.${cls}__progress`);
+	const includeVideo = options.includeVideo || false;
 
-	if (! wrapper) return;
+	if (!wrapper) return;
 
-	const getImages = () => {
-		area.querySelectorAll('*:not(script)').forEach((tag) => {
-			let background = getComputedStyle(tag, null).backgroundImage;
+	// Функция для сбора всех изображений и видео (если включено)
+	const getMedia = () => {
+		const elements = area.querySelectorAll('*:not(script)');
+		elements.forEach((tag) => {
+			const background = getComputedStyle(tag).backgroundImage;
 
-			if (tag.src && tag.tagName.toLowerCase() == 'img') {
-				images = [...images, tag.src];
-			} else if (background !== 'none') {
-				images = [...images, ...parseUrl(background)];
+			if (tag.tagName.toLowerCase() === 'img' && tag.src) {
+				media.push(tag.src);
+			} else if (includeVideo && tag.tagName.toLowerCase() === 'video' && tag.currentSrc) {
+				media.push(tag.currentSrc);
+			} else if (background && background !== 'none') {
+				media.push(...parseUrl(background));
 			}
 		});
-	}
+	};
 
+	// Парсинг URL из background-image
 	const parseUrl = (background) => {
-		return background.split(',').reduce((images, part) => {
+		return background.split(',').reduce((result, part) => {
 			if (part.includes('url')) {
-				return [...images, part.trim().slice(4, -1).replace(/["']/g, "")];
+				const url = part.trim().slice(4, -1).replace(/["']/g, "");
+				result.push(url);
 			}
-			
-			return images;
+			return result;
 		}, []);
-	}
+	};
 
-	const imagesLoaded = () => {
-		let percent = Math.round(100 / images.length * ++ctr);
-		
+	// Обновление прогресса
+	const updateProgress = () => {
+		const percent = Math.round((++ctr / media.length) * 100);
+
 		if (progress) {
 			progress.style.setProperty('--progress', percent);
 			progress.dataset.count = percent;
 		}
-		
-		(ctr === images.length) && loadDone();
-	}
-	
+
+		if (ctr === media.length) {
+			loadDone();
+		}
+	};
+
+	// Завершение прелоадера
 	const loadDone = () => {
 		wrapper.classList.add(`${cls}_done`);
 
-		let computed = getComputedStyle(wrapper, null);
-		let delay = parseInt(computed.transitionDuration) * 1000;
-
-		setTimeout(() => { 
+		const transitionDuration = parseFloat(getComputedStyle(wrapper).transitionDuration) || 1.2;
+		setTimeout(() => {
 			wrapper.remove();
-		}, delay || 1200);
-	}
+		}, transitionDuration * 1000);
+	};
 
+	// Инициализация загрузки медиа
 	const init = () => {
-		getImages();
+		getMedia();
 
-		images.forEach((item, i) => {
-			let clone = new Image();
-
-			clone.onload = imagesLoaded;
-			clone.onerror = imagesLoaded;
-			clone.src = images[i];
+		media.forEach((src) => {
+			if (includeVideo && (src.endsWith('.mp4') || src.endsWith('.webm') || src.endsWith('.ogg'))) {
+				const video = document.createElement('video');
+				video.onloadeddata = updateProgress;
+				video.onerror = updateProgress;
+				video.src = src;
+			} else {
+				const img = new Image();
+				img.onload = updateProgress;
+				img.onerror = updateProgress;
+				img.src = src;
+			}
 		});
-	}
+	};
 
-	document.addEventListener('DOMContentLoaded', init, false);
-}
+	document.addEventListener('DOMContentLoaded', init);
+};

@@ -1,4 +1,4 @@
-export const rangeSingleTweaker = (item, options = {}) => {
+export const tweakerRangeSingle = (item, options = {}) => {
 		
 	class Range {
 		constructor(item, options) {

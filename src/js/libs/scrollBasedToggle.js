@@ -1,188 +1,168 @@
 /* 
-* Переключатель классов основанный на скролле. Метод принимает в параметры
-* блок содержащий элементы, для которого создается обертка с тем же классом, 
-* но с окончанием "-outer". Этой обертке, надо задать стилевую высоту, которая
-* будет определять продолжительность эффекта. Высота обертки, должна быть гарантированно
-* больше высоты блока с элементами.
+* Упрощенный аналог wow.js. Отслеживает появление элемента снизу
+* в области просмотра браузера. Добавляет и (опционально)
+* убирает класс .active
 * 
 * @разметка:
 * 
-<div class="scroll__items">
-	<div class="scroll__item active current"></div>
-	<div class="scroll__item"></div>
-	<div class="scroll__item"></div>
-	<div class="scroll__item"></div>
-</div>
+<div class="someblock" data-animation="-0.5"></div>
+<div class="someblock" data-animation="0" data-repeat></div>
+<div class="someblock" data-animation="0.5" data-repeat-both></div>
+<div class="someblock" data-animation="200px"></div>
 * 
-* @стили:
+* @параметры разметки: 
 * 
-* &__items {
-* 	position: sticky;
-* 	top: 0;
-* }
+* data-animation="0.5" - показатель смещения. Относительный множитель 
+* показывающий на какую часть от своей высоты, должен показаться снизу 
+* элемент, чтобы добавился класс. Принимает положительные и отрицательные 
+* значения. Так же, может абсолютно задаваться в пикселях. 
 * 
-* &__item {
-* 	height: 1px;
-* 	width: 100%;
-* 	overflow: hidden;
-* 	position: absolute;
-* 	bottom: 0;
-* 	will-change: scroll-position;
+* data-repeat - убирать класс, если элемент вновь уходит за нижндюю
+* границу браузера
 * 
-* 	img {
-* 		display: block;
-* 		width: 100%;
-* 		height: 100%;
-* 		object-fit: cover;
-* 	}
-* 
-* 	&.active {
-* 		height: 100%;
-* 		scale: calc(1 + (0.5 - 1) * (var(--scroll-prev) * 0.01)); // плавное изменение от 1 до 0.5
-* 		opacity: calc(1 - var(--scroll-prev) * 0.01); // плавное изменение от 0 до 1
-* 	}
-* 	
-* 	&.current {
-* 		height: calc(var(--scroll-curr) * 1%);
-* 		border-radius: calc(150px - (var(--scroll-curr) * 0.01px) * 150); // плавное изменение от 0 до 150px
-* 	}
-* }
+* data-repeat-both - убирать класс, если элемент уходит за нижндюю 
+* или верхнюю границу браузера
 * 
 * @вызов:
 * 
-import { scrollBasedToggle } from "../../js/libs/scroll";
-const sticky = document.querySelector('.scroll__items');
-const items = sticky?.querySelectorAll('.scroll__item');
-
-if (sticky && items) {
-	scrollBasedToggle(sticky, items, { 
-		currentClass: 'current',
-		activeClass: 'actuve', 
-		overallProp: 'scroll-all',
-		currentProp: 'scroll-curr',
-		lag: 400,
-		onOver(sticky) {
-		},
-		onStart(sticky) {
-		},
-		onTick(sticky, step, currentPercentage) {
-		},
-		onUnder(sticky) {
-		}
-	});
-}
-* 
-* @параметры вызова:
+import { scrollBasedToggle } from "../../js/libs/scrollBasedToggle";
+let toggle = scrollBasedToggle({
+	nodes: document.querySelectorAll('.someblock'), // это нужно, если есть элементы имеющие СВОЮ прокрутку, которую надо слушать
+	progress: true,
+	throttle: false,
+	data: 'animation',
+	class: 'showed',
+	add() {
+		console.log(this);
+	},
+	remove() {
+		console.log(this);
+	},
+	tick(progress) {
+		console.log(this, progress);
+	}
+});
+toggle.init(); // переинициализация
+toggle.init(false); // удаление добавленных классов и отвязка обработчиков
 *
-* sticky - блок содержащий целевые элементы.
-* items - элементы у которых будут переключаться классы.
-* activeClass - класс активного элемента
-* previousClass - класс предыдущего элемента
-* currentClass - класс текущего элемента
-* overallProp - создать у контейнера css переменную с этим именем и числовым
-* значением от 0 до 100, основанном на скролле всего блока
-* currentProp - создать у каждого элемента css переменную от 0 до 100, основанную
-* на скролле только для этого элемента
-* previousProp - создать у предыдущего элемента css переменную от 0 до 100
 */
 
-export const scrollBasedToggle = (sticky, items, options = {}) => {
-	const {
-		currentClass = 'current',
-		activeClass = 'active',
-		previousProp = false,
-		overallProp = false,
-		currentProp = false,
-		resetActive = true,
-		lag = 0
-	} = options;
-
-	const name = sticky.className.split(' ')[0];
-	const previous = sticky.previousElementSibling;
-	const _wrapper = document.createElement('div');
-	let position = '';
+export const scrollBasedToggle = (options = {}) => {
+	class Toggle {
 	
-	_wrapper.className = `${name}-outer`;
-	(previous) ? previous.after(_wrapper) : sticky.parentNode.prepend(_wrapper);
-	_wrapper.append(sticky);
-	
-	if (items.length) {
-		let isTicking = false;
-		
-		const scrollToggle = (items, outer) => {
-			const box = outer.getBoundingClientRect();
-			const scrollTop = Math.abs(box.top);
-			const maxScroll = outer.scrollHeight - lag - window.innerHeight;
-			const rest = scrollTop / maxScroll * items.length;
-			const step = Math.min(Math.trunc(rest), items.length - 1);
-			
-			let allPercentage = overallProp && Math.round((scrollTop / maxScroll) * 100);
-			let currentPercentage = (currentProp || previousProp) && Math.floor((rest * 100) % 100);
-
-			// Работа, если в экране
-			if ((lag + box.top) < 0 && (box.bottom - window.innerHeight) > lag) {
-				items.forEach((item, i) => {
-					const resetValue = +(i < step) && 100;
-
-					item.classList.toggle(activeClass, (i <= step));
-					item.classList.toggle(currentClass, (i == step));
-					previousProp && items[i - 1]?.style.setProperty(`--${previousProp}`, resetValue);
-					currentProp && item.style.setProperty(`--${currentProp}`, resetValue);
-				});
-				
-				previousProp && items[step - 1]?.style.setProperty(`--${previousProp}`, currentPercentage);
-				currentProp && items[step].style.setProperty(`--${currentProp}`, currentPercentage);
-				overallProp && sticky.style.setProperty(`--${overallProp}`, allPercentage);
-
-				// вызов коллбэков
-				(typeof options.onStart === 'function' && position !== 'inside') && options.onStart.call(sticky, step);
-				(typeof options.onTick === 'function') && options.onTick.call(sticky, step, currentPercentage);
-				position = 'inside';
-				
-			// Сброс, если выше экрана
-			} else if ((lag + box.top > 0) && position !== 'over') {
-				allPercentage = 0;
-				items[0].classList.remove(currentClass);
-				resetActive && items[0].classList.remove(activeClass);
-				currentProp && items[0].style.setProperty(`--${currentProp}`, 0);
-				overallProp && sticky.style.setProperty(`--${overallProp}`, 0);
-
-				// вызов коллбэка
-				(typeof options.onOver === 'function') && options.onOver.call(sticky);
-				position = 'over';
-				
-			// Сброс, если ниже экрана
-			} else if (box.bottom - lag < window.innerHeight && position !== 'under') {
-				items.forEach(item => item.classList.add(activeClass));
-				overallProp && sticky.style.setProperty(`--${overallProp}`, 100);
-				currentProp && items[items.length - 1].style.setProperty(`--${currentProp}`, 100);
-				previousProp && items[items.length - 2]?.style.setProperty(`--${previousProp}`, 100);
-
-				// вызов коллбэка
-				(typeof options.onUnder === 'function') && options.onUnder.call(sticky);
-				position = 'under';
+		constructor(options) {
+			this.options = {
+				throttle: 250,
+				nodes: [],
+				class: 'active',
+				dataRun: 'animation',
+				dataRepeat: 'repeat',
+				dataRepeatBoth: 'repeatBoth',
+				progress: false,
+				...options
 			}
 
-		};
+			this.isTicking = false;
+			this.nodes = [ window, ...this.options.nodes ];
+			this.init();
+		}
 
-		const onScroll = () => {
-			if (!isTicking) {
-				isTicking = true;
+
+		setProgress(box, shift) {
+			if (this.options.progress) {
+				const end = box.top + window.scrollY;
+				const start = box.top + window.scrollY - window.innerHeight + shift;
+				let progress = Math.round((window.scrollY - start) / (end - start) * 100);
+			
+				(box.bottom - shift - window.innerHeight > 0) && (progress = 0);
+				(box.top < 0) && (progress = 100);
+
+				return progress;
+			}
+			
+			return null;
+		}
+
+
+		scrollToggle(item) {
+			let action;
+
+			const box = item.getBoundingClientRect();
+			const active = item.classList.contains(`${this.options.class}`);
+			const repeat = item.dataset[this.options.dataRepeat] != undefined;
+			const repeatBoth = item.dataset[this.options.dataRepeatBoth] != undefined;
+			
+			let shift = item.dataset[`${this.options.dataRun}`] || '0';
+			shift = shift.includes('px') ? box.height - parseFloat(shift) : box.height * shift;
+			
+			const insideOver = box.bottom + shift > 0;
+			const insideUnder = box.bottom - shift - window.innerHeight < 0;
+			
+			! insideUnder && repeat && active && (action = 'remove');
+			! active && insideOver && insideUnder && (action = 'add');
+			! (insideOver && insideUnder) && repeatBoth && active && (action = 'remove');
+			
+			if (action) {
+				item.classList[action](`${this.options.class}`);
+				(typeof this.options[action] === 'function') && this.options[action].call(item);
+			}
+			
+			(typeof this.options.tick === 'function') && this.options.tick.call(item, this.setProgress(box, shift));
+		}
+		
+
+		#onScroll(item) {
+			if (!this.isTicking && !this.options.throttle) {
+				this.isTicking = true;
 
 				requestAnimationFrame(() => {
-					scrollToggle(items, _wrapper);
-					isTicking = false;
+					this.scrollToggle(item);
+					this.isTicking = false;
+				});
+
+			} else {
+				this.scrollToggle(item);
+			}
+		}
+
+
+		#throttle = (fn) => {
+			let lastTime = 0;
+		
+			return (...args) => {
+				if (this.options.throttle) {
+					const now = new Date().getTime();
+					
+					if (now - lastTime >= this.options.throttle) {
+						lastTime = now;
+						fn.apply(this, args);
+					}
+				} else {
+					fn.apply(this, args);
+				}
+			}
+		}
+
+
+		init(flag = true) {
+			if (flag) {
+				this.items = [...document.querySelectorAll(`[data-${this.options.dataRun}]`)].map(item => {
+					item.handler = this.#throttle(this.#onScroll.bind(this, item));
+					return item;
 				});
 			}
-		};
 
-		const observer = new IntersectionObserver((entries) => {
-			entries.forEach(entry => {
-				window[(entry.isIntersecting ? 'add':'remove') +'EventListener']('scroll', onScroll, { capture: true, passive: true });
+			this.items.forEach((item, i) => {
+				item.classList.remove(`${this.options.class}`);
+
+				this.nodes.forEach(node => {
+					node[(flag ? 'add' : 'remove') + 'EventListener']('scroll', item.handler)
+				});
+				
+				flag && this.#onScroll(item);
 			});
-		});
-
-		observer.observe(_wrapper);
-		scrollToggle(items, _wrapper);
+		}
 	}
+
+	return new Toggle(options);
 }
