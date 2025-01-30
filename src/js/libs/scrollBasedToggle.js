@@ -1,7 +1,8 @@
 /* 
-* Упрощенный аналог wow.js. Отслеживает появление элемента снизу
-* в области просмотра браузера. Добавляет и (опционально)
-* убирает класс .active
+* Отслеживает появление элемента снизу в области просмотра 
+* браузера. Добавляет и (опционально) убирает заданный класс. 
+* Передает в коллбек динамический фактор от 0 до 100, от 
+* пройденного элементом расстояния в области просмотра
 * 
 * @разметка:
 * 
@@ -39,12 +40,17 @@ let toggle = scrollBasedToggle({
 		console.log(this);
 	},
 	tick(progress) {
-		console.log(this, progress);
+		this.style.setProperty('--progress', progress);
 	}
 });
 toggle.init(); // переинициализация
 toggle.init(false); // удаление добавленных классов и отвязка обработчиков
 *
+* @формула для работы с динамическим фактором:
+* 
+* значения между --from и --to, вычисляются по формуле
+* calc(var(--from) + (var(--to) - var(--from)) * var(--progress) * 0.01);
+* 
 */
 
 export const scrollBasedToggle = (options = {}) => {
@@ -71,7 +77,7 @@ export const scrollBasedToggle = (options = {}) => {
 		setProgress(box, shift) {
 			if (this.options.progress) {
 				const end = box.top + window.scrollY;
-				const start = box.top + window.scrollY - window.innerHeight + shift;
+				const start = box.bottom - shift + window.scrollY - window.innerHeight;
 				let progress = Math.round((window.scrollY - start) / (end - start) * 100);
 			
 				(box.bottom - shift - window.innerHeight > 0) && (progress = 0);
@@ -95,7 +101,7 @@ export const scrollBasedToggle = (options = {}) => {
 			let shift = item.dataset[`${this.options.dataRun}`] || '0';
 			shift = shift.includes('px') ? box.height - parseFloat(shift) : box.height * shift;
 			
-			const insideOver = box.bottom + shift > 0;
+			const insideOver = box.bottom > 0;
 			const insideUnder = box.bottom - shift - window.innerHeight < 0;
 			
 			! insideUnder && repeat && active && (action = 'remove');
