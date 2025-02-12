@@ -36,17 +36,6 @@ body { @include screen-media(); }
 
 // @import "../../node_modules/swiper/swiper";
 
-:root {
-	--size: #{$basesize}px;
-	--container: 1240px;
-	--gap: 24px;
-	
-	@include media('<=xs') {
-		--gap: 16px;
-	}
-}
-
-
 body, html {
 	// scrollbar-gutter: stable;
 	// scroll-behavior: smooth;	

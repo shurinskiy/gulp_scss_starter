@@ -44,7 +44,7 @@ export const tweakerRangeDouble = (item, options = {}) => {
 		
 	class Range {
 		constructor(item, options) {
-			if(!item || !item instanceof Element) return;
+			if(! (item instanceof Element)) return;
 
 			this.options = {
 				class: 'range',

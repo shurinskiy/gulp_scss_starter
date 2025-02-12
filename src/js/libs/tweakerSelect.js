@@ -66,25 +66,40 @@ export const tweakerSelect = (items, props = {}) => {
 			this.init();
 		}
 
+		dataset(from, to, remove = true, omit = 'value') {
+			const omits = (omit && omit.split(',').map(i => i.trim())) || [];
+
+			for(let data in from.dataset) {
+				if (omits.includes(data)) continue;
+				
+				to.dataset[`${data}`] = from.dataset[data];
+				remove && from.removeAttribute(`data-${data}`);
+			}
+		}
+
 		render() {
 			const previous = this.select.previousElementSibling;
 
-			for(let data in this.select.dataset) {
-				this.wrapper.dataset[`${data}`] = this.select.dataset[data];
-				this.select.removeAttribute(`data-${data}`);
-			}
-	
+			this.dataset(this.select, this.wrapper);
 			(previous) ? previous.after(this.wrapper) : this.select.parentNode.prepend(this.wrapper);
 
 			this.body.append(this.list);
 			this.wrapper.append(this.select, this.head, this.body);
 			this.head.textContent = this.options[this.selectedIndex].textContent;
+			this.dataset(this.options[this.selectedIndex], this.head, false);
 			this.select.removeAttribute('class');
 			this.select.style.display = 'none';
 
-			this.list.innerHTML = [...this.options]
-				.map(opt => `<li class="${this.props.name}__item" data-value="${opt.value}">${opt.text}</li>`)
-				.join('\n');
+			[...this.options].forEach(opt => {
+				const item = document.createElement('li');
+
+				item.className = `${this.props.name}__item`;
+				item.dataset.value = opt.value;
+				item.innerText = opt.text;
+				
+				this.dataset(opt, item);
+				this.list.append(item);
+			});
 
 			this.items = [...this.list.children];
 			this.items[this.selectedIndex].classList.add(this.currentClass);
@@ -95,6 +110,7 @@ export const tweakerSelect = (items, props = {}) => {
 
 			this.wrapper.classList.remove(`${this.props.name}_opened`);
 			this.head.textContent = this.items[i].textContent;
+			this.dataset(this.items[i], this.head, false);
 			this.select.value = this.items[i].getAttribute('data-value');
 			
 			this.items.forEach(item => item.classList.remove(this.currentClass));

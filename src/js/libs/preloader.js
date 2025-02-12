@@ -63,9 +63,7 @@ export const preloadingBar = (options = {}) => {
 			progress.dataset.count = percent;
 		}
 
-		if (ctr === media.length) {
-			loadDone();
-		}
+		(ctr === media.length) && loadDone();
 	};
 
 	// Завершение прелоадера
@@ -81,6 +79,7 @@ export const preloadingBar = (options = {}) => {
 	// Инициализация загрузки медиа
 	const init = () => {
 		getMedia();
+		! media.length && loadDone();
 
 		media.forEach((src) => {
 			if (includeVideo && (src.endsWith('.mp4') || src.endsWith('.webm') || src.endsWith('.ogg'))) {

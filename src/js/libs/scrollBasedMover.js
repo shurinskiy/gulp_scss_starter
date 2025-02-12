@@ -14,7 +14,7 @@
 	<div class="scroll__item"></div>
 </div>
 * 
-* @стили:
+* @типичные стили:
 * 
 * &__items {
 * 	position: sticky;
@@ -61,14 +61,10 @@ if (sticky && items) {
 		overallProp: 'scroll-all',
 		currentProp: 'scroll-curr',
 		lag: 400,
-		onOver(sticky) {
-		},
-		onStart(sticky) {
-		},
-		onTick(sticky, step, currentPercentage) {
-		},
-		onUnder(sticky) {
-		}
+		onOver(sticky) {},
+		onStart(sticky) {},
+		onTick(sticky, step, currentPercentage) {},
+		onUnder(sticky) {}
 	});
 }
 * 
@@ -84,6 +80,12 @@ if (sticky && items) {
 * currentProp - создать у каждого элемента css переменную от 0 до 100, основанную
 * на скролле только для этого элемента
 * previousProp - создать у предыдущего элемента css переменную от 0 до 100
+*
+* @формула для работы с динамическим фактором:
+* 
+* значения между --from и --to, вычисляются по формуле
+* calc(var(--from) + (var(--to) - var(--from)) * var(--scroll) * 0.01);
+*
 */
 
 export const scrollBasedMover = (sticky, items, options = {}) => {
@@ -112,8 +114,8 @@ export const scrollBasedMover = (sticky, items, options = {}) => {
 		const scrollToggle = (items, outer) => {
 			const box = outer.getBoundingClientRect();
 			const scrollTop = Math.abs(box.top);
-			const maxScroll = outer.scrollHeight - lag - window.innerHeight;
-			const rest = scrollTop / maxScroll * items.length;
+			const maxScroll = outer.scrollHeight - window.innerHeight - lag * 2;
+			const rest = (scrollTop - lag) / maxScroll * items.length;
 			const step = Math.min(Math.trunc(rest), items.length - 1);
 			
 			let allPercentage = overallProp && Math.round((scrollTop / maxScroll) * 100);
