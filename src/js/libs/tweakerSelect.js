@@ -78,10 +78,8 @@ export const tweakerSelect = (items, props = {}) => {
 		}
 
 		render() {
-			const previous = this.select.previousElementSibling;
-
 			this.dataset(this.select, this.wrapper);
-			(previous) ? previous.after(this.wrapper) : this.select.parentNode.prepend(this.wrapper);
+			this.select.parentNode.insertBefore(this.wrapper, this.select.nextSibling || null);
 
 			this.body.append(this.list);
 			this.wrapper.append(this.select, this.head, this.body);
@@ -138,9 +136,7 @@ export const tweakerSelect = (items, props = {}) => {
 
 	if (items instanceof NodeList || Array.isArray(items)) {
 		items.forEach((item) => new Select(item, props));
-	} else if (items instanceof HTMLElement) {
-		return new Select(items, props);
 	} else {
-		throw new Error("Invalid input: expected NodeList, HTMLElement, or Array.");
+		return new Select(items, props);
 	}
 }
