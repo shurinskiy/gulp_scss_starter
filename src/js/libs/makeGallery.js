@@ -66,7 +66,6 @@ export const makeGallery = (items, options = {}) => {
 
 			this.options = {
 				class: 'gallery',
-				navigation: false,
 				thumbnails: true,
 				...options
 			};
@@ -83,9 +82,8 @@ export const makeGallery = (items, options = {}) => {
 		}
 		
 		render() {
-			const previous = this.$frame.previousElementSibling;
-
-			this.$wrapper.className = `${this.$frame.className} ${this.options.class}`;
+			this.$wrapper.className = this.$frame.className;
+			this.$wrapper.classList.add(this.options.class);
 			this.$thumbs.className = `${this.options.class}__thumbs`;
 			this.$frame.className = `${this.options.class}__frame`;
 
@@ -105,23 +103,12 @@ export const makeGallery = (items, options = {}) => {
 				}
 			});
 
-			(previous) ? previous.after(this.$frame) : this.$frame.parentNode.prepend(this.$wrapper);
+			this.$frame.parentNode.insertBefore(this.$wrapper, this.$frame.nextSibling || null);
 			this.$wrapper.append(this.$frame);
-			
-			if(this.options.thumbnails) {
-				this.$wrapper.append(this.$thumbs);
-			}
-
-			if (this.options.navigation) {
-				const $prev = document.createElement('button');
-				const $next = document.createElement('button');
-				$prev.className = `${this.options.class}__prev`;
-				$next.className = `${this.options.class}__next`;
-				this.$frame.append($prev, $next);
-			}
+			this.options.thumbnails && this.$wrapper.append(this.$thumbs);
 
 			if (typeof this.options.render === 'function')  {
-				return this.options.render.call(this.$frame);
+				return this.options.render.call(this);
 			}
 
 		}
@@ -142,8 +129,10 @@ export const makeGallery = (items, options = {}) => {
 				currentActive = this.$items.length - 1;
 			}
 
-			this.$items[currentActive].parentNode.classList.add('active')
+			this.$items[currentActive].parentNode.classList.add('active');
 			this.$thumbs.children[currentActive]?.classList.add('active');
+
+			return currentActive;
 		}
 
 		clickHandler(e) {
@@ -153,14 +142,6 @@ export const makeGallery = (items, options = {}) => {
 				this.$items[[...this.$thumbs.children].findIndex(el => el == e.target)].parentNode.classList.add('active');
 				e.target.classList.add('active');
 			}
-
-			// если клик по кнопке "prev"
-			if (e.target.classList.contains(`${this.options.class}__prev`))
-				this.moveActive(-1);
-
-			// если клик по кнопке "next"
-			if (e.target.classList.contains(`${this.options.class}__next`))
-				this.moveActive(1);
 		}
 	}
 

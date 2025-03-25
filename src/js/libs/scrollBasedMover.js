@@ -50,21 +50,21 @@
 * 
 * @вызов:
 * 
-import { scrollBasedToggle } from "../../js/libs/scroll";
+import { scrollBasedMover } from "../../js/libs/scrollBasedMover";
 const sticky = document.querySelector('.scroll__items');
 const items = sticky?.querySelectorAll('.scroll__item');
 
 if (sticky && items) {
-	scrollBasedToggle(sticky, items, { 
+	scrollBasedMover(sticky, items, { 
 		currentClass: 'current',
 		activeClass: 'actuve', 
 		overallProp: 'scroll-all',
 		currentProp: 'scroll-curr',
 		lag: 400,
-		onOver(sticky) {},
-		onStart(sticky) {},
-		onTick(sticky, step, currentPercentage) {},
-		onUnder(sticky) {}
+		onOver() {},
+		onStart() {},
+		onTick(step, currentPercentage) {},
+		onUnder() {}
 	});
 }
 * 
