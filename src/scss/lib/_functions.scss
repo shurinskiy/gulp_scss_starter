@@ -83,3 +83,8 @@
 		@return math.div($pixel, 16) + rem;
 	}
 }
+
+// расчет значения для непрерывного css свойства, основываясь на значении из переменной
+@function dynamic($from, $to, $scrollVar: '--scroll', $factor: 0.01) {
+	@return calc(#{$from} + (#{$to} - #{$from}) * var(#{$scrollVar}) * #{$factor});
+}
