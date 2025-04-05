@@ -26,7 +26,7 @@
 * @вызов
 * 
 import { driveTabs } from "../../js/libs/driveTabs";
-tabs = driveTabs({
+const tabs = driveTabs({
 	container: '.tab',
 	controls: '.tab__button',
 	selects: ['.tab__block', '.tab__otherblocks a'],
@@ -113,6 +113,21 @@ export const driveTabs = (props = {}) => {
 		}
 
 		init() {
+			for (const [i, set] of this.selects.entries()) {
+				if (this.controls.length !== set.length) {
+					console.error(
+						`Tabs warning: Controls count (${this.controls.length}) ` +
+						`doesn't match targets set #${i} count (${set.length})`
+					);
+					return;
+				}
+			}
+
+			if (this.currentActive === -1) {
+				console.warn('Tabs warning: No active tab found, activating first tab');
+				this.setActive(0);
+			}			
+
 			this.controls.forEach((button, i) => {
 				this.events.forEach(event => {
 					button.addEventListener(event, (e) => this.setActive(i, e));
