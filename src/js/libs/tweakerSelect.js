@@ -63,10 +63,10 @@ export const tweakerSelect = (items, props = {}) => {
 			this.body.className = `${this.props.name}__body`;
 			this.list.className = `${this.props.name}__list`;
 
-			this.init();
+			this.#init();
 		}
 
-		dataset(from, to, remove = true, omit = 'value') {
+		#dataset(from, to, remove = true, omit = 'value') {
 			const omits = (omit && omit.split(',').map(i => i.trim())) || [];
 
 			for(let data in from.dataset) {
@@ -77,14 +77,14 @@ export const tweakerSelect = (items, props = {}) => {
 			}
 		}
 
-		render() {
-			this.dataset(this.select, this.wrapper);
+		#render() {
+			this.#dataset(this.select, this.wrapper);
 			this.select.parentNode.insertBefore(this.wrapper, this.select.nextSibling || null);
 
 			this.body.append(this.list);
 			this.wrapper.append(this.select, this.head, this.body);
 			this.head.textContent = this.options[this.selectedIndex].textContent;
-			this.dataset(this.options[this.selectedIndex], this.head, false);
+			this.#dataset(this.options[this.selectedIndex], this.head, false);
 			this.select.removeAttribute('class');
 			this.select.style.display = 'none';
 
@@ -95,7 +95,7 @@ export const tweakerSelect = (items, props = {}) => {
 				item.dataset.value = opt.value;
 				item.innerText = opt.text;
 				
-				this.dataset(opt, item);
+				this.#dataset(opt, item);
 				this.list.append(item);
 			});
 
@@ -103,12 +103,12 @@ export const tweakerSelect = (items, props = {}) => {
 			this.items[this.selectedIndex].classList.add(this.currentClass);
 		}
 
-		update = (i, e) => {
+		#update = (i, e) => {
 			e?.preventDefault();
 
 			this.wrapper.classList.remove(`${this.props.name}_opened`);
 			this.head.textContent = this.items[i].textContent;
-			this.dataset(this.items[i], this.head, false);
+			this.#dataset(this.items[i], this.head, false);
 			this.select.value = this.items[i].getAttribute('data-value');
 			
 			this.items.forEach(item => item.classList.remove(this.currentClass));
@@ -118,12 +118,12 @@ export const tweakerSelect = (items, props = {}) => {
 			e && (typeof this.props.select === 'function') && this.props.select.call(this.wrapper, i);
 		}
 
-		init() {
-			this.render();
+		#init() {
+			this.#render();
 
 			this.head.addEventListener('click', () => this.wrapper.classList.toggle(`${this.props.name}_opened`));
-			this.options.forEach((option, i) => option.addEventListener('click', () => this.update(i)));
-			this.items.forEach((item, i) => item.addEventListener('click', e => this.update(i, e)));
+			this.options.forEach((option, i) => option.addEventListener('click', () => this.#update(i)));
+			this.items.forEach((item, i) => item.addEventListener('click', e => this.#update(i, e)));
 				
 			['click','touchstart'].forEach(event => {
 				document.addEventListener(event, e => { 

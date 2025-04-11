@@ -4,7 +4,7 @@
 * для прослушиваения, может уточняться параметром select при вызове. 
 * 
 * <a href="./" data-modal>some content..</a>:
-* если нет значения - берет содержимое (some content..)
+* если нет значения - берет свое содержимое (some content..)
 * 
 * <a href="./" data-modal="#someblock"></a>:
 * если начинается с "#", то находит элемент с id="someblock"
@@ -69,9 +69,9 @@ export const makeModal = function(props = {}) {
 	class Modal {
 		constructor(props) {
 			this.props = {
+				modules: [],
 				class: 'modal',
-				slideshowClassMod: 'slideshow',
-				slideshowClassActive: 'active',
+				preserve: false,
 				...props
 			};
 
@@ -79,11 +79,12 @@ export const makeModal = function(props = {}) {
 			this.modal = document.querySelector(`#${this.props.class}__underlay`);
 			this.body = document.querySelector(`.${this.props.class}__body`);
 			this.content = document.querySelector(`.${this.props.class}__content`);
-			this.navi = document.querySelector(`.${this.props.class}__navi`);
-			this.slideshow = false;
-		
+			this._hooks = { open: [], close: [] };
+			this.detached = null;
+
 			this.#init();
 		}
+
 
 		close(cb = this.props.close) {
 			this.modal.className = `${this.props.class}`;
@@ -91,105 +92,83 @@ export const makeModal = function(props = {}) {
 			
 			this.content.className = `${this.props.class}__content`;
 			this.content.innerHTML = '';
-			this.navi?.remove();
-			delete this.cnt, this.items;
 
+			if (this.props.preserve && this.detached) {
+				const { node, parent, next } = this.detached;
+
+				if (next && next.parentNode === parent) {
+					parent.insertBefore(node, next);
+				} else {
+					parent.appendChild(node);
+				}
+				this.detached = null;
+			}
+
+			// вызов хука close у плагинов
+			this._hooks.close.forEach(close => close());
 			(typeof cb === 'function') && cb.call(this.content, this);
+
 			return false;
 		}
 
-		open(el, cb = this.props.open) {
-			const data = el.dataset[`${this.props.class}`];
-			let content;
 
-			if (!data) {
-				content = el.innerHTML;
-			} else if (data.startsWith('#')) {
-				content = document.querySelector(data)?.innerHTML;
-			} else {
-				content = document.createElement('img');
-				content.src = data;
-			}
-
-			this.modal.className = `${this.props.class}`;
-			this.modal.classList.add(data.startsWith('#') ? `${this.props.class}_${data.replace('#', '')}`:`${this.props.class}_self`);
-			this.modal.style.display = "block";
+		open(source, cb = this.props.open) {
+			const isData = source.hasAttribute(`data-${this.props.class}`);
+			const data = source.dataset[this.props.class];
+			let content = null;
+			let mod = 'self';
 			
+			if (source instanceof HTMLElement && !isData) {
+				// Прямо переданный целевой блок
+				content = source;
+				mod = 'custom';
+				
+				if (this.props.preserve) {
+					this.detached = { 
+						node: content, 
+						parent: content.parentNode, 
+						next: content.nextSibling 
+					};
+				}
+				
+			} else {
+				// Обычный режим — кнопка с data-modal
+				if (isData && !data) {
+					content = source.innerHTML;
+
+				} else if (data.startsWith('#')) {
+					const node = document.querySelector(data);
+					mod = data.slice(1);
+		
+					if (this.props.preserve && node) {
+						this.detached = { node, parent: node.parentNode, next: node.nextSibling };
+						content = node;
+
+					} else {
+						content = node?.innerHTML;
+					}
+
+				} else {
+					content = document.createElement('img');
+					content.src = data;
+				}
+			}
+		
+			this.modal.className = this.props.class;
+			this.modal.classList.add(`${this.props.class}_${mod}`);
+			this.modal.style.display = "block";
+		
 			this.content.innerHTML = '';
 			this.content.className = `${this.props.class}__content`;
-			this.content['insertAdjacent' + ((typeof content == 'string') ? 'HTML' : 'Element')]('beforeend', content ?? '');
-			
-			(data.startsWith('#')) || this.#slideshow(el.attributes.rel?.value);
-			(typeof cb === 'function') && cb.call(this.content, this, el);
-
+			this.content['insertAdjacent' + (typeof content === 'string' ? 'HTML' : 'Element')]('beforeend', content ?? '');
+		
+			// вызов хука open у плагинов
+			this._hooks.open.forEach(open => open(source));
+			if (typeof cb === 'function') cb.call(this.content, this, source);
+		
 			return true;
 		}
-						
-		move(direction = 1) {
-			this.items[this.cnt].classList.remove(`${this.props.slideshowClassActive}`);
-			this.cnt += direction;
-			
-			if (this.cnt < 0) { this.cnt = this.items.length - 1; }
-			else if (this.cnt >= this.items.length) { this.cnt = 0; }
-			
-			this.items[this.cnt].classList.add(`${this.props.slideshowClassActive}`);
-
-			if (typeof this.props.move === 'function') 
-				return this.props.move.call(this.content, this);
-		}
-
-		#slideshow(rel) {
-			if (! rel) return;
-			
-			let counter = 0;
-			const current = this.content.querySelector('img, video');
-			
-			[...document.querySelectorAll(`[rel="${rel}"]`)].map(item => {
-				const data = item.dataset[`${this.props.class}`];
-				const source = item.querySelector('img, video');
-				let child;
-				
-				if (!data) {
-					child = source.cloneNode();
-				} else {
-					child = document.createElement('img');
-					child.src = data;
-				}
-				
-				if (child.src !== current.src) {
-					Object.assign(child.dataset, source.dataset);
-					this.content.appendChild(child);
-					counter++;
-				} else {
-					Object.assign(current.dataset, source.dataset);
-				}
-			});
-
-			this.content.classList.add(`${this.props.class}__content_${this.props.slideshowClassMod}`);
-			current.classList.add(`${this.props.slideshowClassActive}`);
-
-			if (counter > 1) {
-				const navi = document.createElement('div');
-				const prev = document.createElement('button');
-				const next = document.createElement('button');
-				this.items = this.content.querySelectorAll('img, video');
-				this.cnt = 0;
-	
-				navi.className = `${this.props.class}__navi`;
-				prev.className = `${this.props.class}__prev`;
-				next.className = `${this.props.class}__next`;
-	
-				navi.append(prev);
-				navi.append(next);
-				this.body.append(navi);
-				this.navi = navi;
-	
-				prev.addEventListener('click', () => this.move(-1));
-				next.addEventListener('click', () => this.move());
-
-				this.slideshow = true;
-			}
-		}
+		
 
 		#underlay() {
 			if (! this.modal) {
@@ -216,8 +195,22 @@ export const makeModal = function(props = {}) {
 			}
 		}
 
+
 		#init() {
 			this.#underlay();
+
+			// инициализация плагинов и их хуков
+			this.props.modules.forEach(plugin => {
+				if (plugin && typeof plugin === 'object') {
+					plugin.init?.(this, this.props[plugin.name]);
+					
+					Object.keys(this._hooks).forEach(hook => {
+						if (typeof plugin[hook] === 'function') {
+							this._hooks[hook].push(plugin[hook].bind(plugin, this));
+						}
+					});
+				}
+			});
 
 			document.addEventListener('click', (e) => {
 				let el = e.target.closest(this.select);
@@ -237,8 +230,8 @@ export const makeModal = function(props = {}) {
 				if (this.modal.style.display === 'block' && (e.key === "Escape" || e.key === "Esc"))
 					this.close();
 			});
-				
-			if (typeof this.props.init === 'function') this.props.init.call(this, this.modal);
+			
+			(typeof this.props.init === 'function') && this.props.init.call(this, this.modal);
 		}
 	}
 
