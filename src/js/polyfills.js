@@ -1,3 +1,6 @@
+// глобальный объект для экспорта логики
+window.Site = {};
+
 /* Polyfills */
 (function(e) {
 	e.matches = e.matches || e.mozMatchesSelector || e.msMatchesSelector || e.oMatchesSelector || e.webkitMatchesSelector;

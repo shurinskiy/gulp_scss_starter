@@ -72,7 +72,7 @@ export const slideshow = {
 		};
 
 		// Добавить новый хук в базовый класс
-		Object.assign(modal._hooks, { move: [] });
+		modal._hooks.move ||= [];
 		
 		// Добавить новый метод в базовый класс
 		modal.move = this.slideshowMove.bind(this);

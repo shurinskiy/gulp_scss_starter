@@ -25,14 +25,24 @@
 * 
 * @вызов:
 * 
-import { addUnderlay, makeModal } from "../../js/lib";
+import { makeModal } from "../../js/libs/modal";
+import { slideshow } from "../../js/libs/modal.slideshow";
+import { playbutton } from "../../js/libs/modal.playbutton";
 import scrollLock from 'scroll-lock';
 import Inputmask from "inputmask";
 
 makeModal({ 
 	select: '.somebutton', 
 	class: 'modal', 
-	open: function(modal) {
+	modules: [ slideshow, playbutton ],
+	slideshow: {
+		classMod: 'gallery',
+		classActive: 'active'
+	},
+	init(underlay) {
+		underlay.setAttribute('data-scroll-lock-scrollable', '');
+	},
+	open(modal, button) {
 		scrollLock.disablePageScroll();
 		
 		Inputmask({ 
@@ -44,11 +54,11 @@ makeModal({
 			this.addEventListener('click', (e) => modalFrame.move());
 		}
 	},
-	close: function() {
+	close() {
 		scrollLock.enablePageScroll();
 	},
-	init: function(underlay) {
-		underlay.setAttribute('data-scroll-lock-scrollable', '');
+	move(modal) {
+		// работает только если подключен slideshow
 	}
 });
 * 

@@ -73,19 +73,15 @@ export const driveTabs = (props = {}) => {
 			
 			this.init();
 		}
-		
-		setActive = (i, e) => {
+
+		#setActive = (i, e) => {
 			e?.preventDefault();
 
 			if (typeof this.props.onClick === 'function' && e)
 				this.props.onClick.call(this, i);
 
 			if (! this.controls[i].classList.contains(this.props.cls)) {
-				this.controls.forEach((button, i) => {
-					button.classList.remove(this.props.cls);
-					this.selects.map(set => set[i].classList.remove(this.props.cls));
-				});
-	
+				this.close();
 				this.controls[i].classList.add(this.props.cls);
 
 				this.selects.map(set => {
@@ -99,6 +95,11 @@ export const driveTabs = (props = {}) => {
 			if (typeof this.props.onTick === 'function')
 				this.props.onTick.call(this, i);
 		}
+		
+		close = () => this.controls.forEach((button, i) => {
+			button.classList.remove(this.props.cls);
+			this.selects.map(set => set[i].classList.remove(this.props.cls));
+		});
 
 		move = (direction = 1) => {
 			this.currentActive += direction;
@@ -109,7 +110,7 @@ export const driveTabs = (props = {}) => {
 				this.currentActive = this.controls.length - 1;
 			}
 
-			this.setActive(this.currentActive);
+			this.#setActive(this.currentActive);
 		}
 
 		init() {
@@ -123,14 +124,9 @@ export const driveTabs = (props = {}) => {
 				}
 			}
 
-			if (this.currentActive === -1) {
-				console.warn('Tabs warning: No active tab found, activating first tab');
-				this.setActive(0);
-			}			
-
 			this.controls.forEach((button, i) => {
 				this.events.forEach(event => {
-					button.addEventListener(event, (e) => this.setActive(i, e));
+					button.addEventListener(event, (e) => this.#setActive(i, e));
 				});
 			});
 
