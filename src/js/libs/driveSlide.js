@@ -1,4 +1,4 @@
-export const driveSlide = {
+const driveSlide = {
 
 	up(el, { duration = 500, opacity = false, callback } = {}) {
 		if (el.timeout || window.getComputedStyle(el).display === 'none') return;
@@ -38,7 +38,6 @@ export const driveSlide = {
 
 		const height = el.offsetHeight + 'px';
 		const animateProps = ['padding-bottom', 'margin-bottom', 'padding-top', 'margin-top'];
-		
 		const resetProps = [
 			'transition-duration',
 			'transition-property',
@@ -73,7 +72,6 @@ export const driveSlide = {
 		});
 	
 		el.timeout = window.setTimeout(() => {
-			delete el.dataset.sliding;
 			resetProps.forEach(pr => el.style.removeProperty(pr));
 			callback?.call(el);
 			delete el.timeout;
@@ -125,5 +123,27 @@ export const driveSlide = {
 				});
 			});
 		});
+	},
+
+	
+	accordionSimple(items, options = {}) {
+		const {
+			events = 'click',
+			toggle = false,
+			cls = 'opened'
+		} = options;
+
+		events.split(' ').forEach(event => {
+			items.forEach(item => {
+				item.addEventListener(event, function (e) {
+					e.stopPropagation();
+					items.forEach(other => (other !== this) && other.classList.remove(cls));
+					this.classList.contains(cls) || this.classList[(toggle ? 'toggle' : 'add')](cls);
+				});
+			});
+		});
 	}
-}
+};
+
+export default driveSlide;
+export const { up, down, toggle, accordion, accordionSimple } = driveSlide;

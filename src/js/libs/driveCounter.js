@@ -1,4 +1,4 @@
-export function runCounter(items, props = {}) {
+export function driveCounter(items, props = {}) {
 
 	class Counter {
 		constructor(items, props) {
