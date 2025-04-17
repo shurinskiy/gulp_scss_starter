@@ -159,8 +159,8 @@ export const scrollBasedMover = (sticky, items, options = {}) => {
 				currentProp && items[step].style.setProperty(`--${currentProp}`, coverPercentage);
 				
 				// вызов коллбэков
-				(typeof options.onStart === 'function' && position !== 'inside') && options.onStart.call(sticky, step);
-				(typeof options.onTick === 'function') && options.onTick.call(sticky, step, coverPercentage);
+				(position !== 'inside') && options.onStart?.call(sticky, step);
+				options.onTick?.call(sticky, step, coverPercentage);
 				position = 'inside';
 
 			// Сброс, если выше экрана
@@ -170,7 +170,7 @@ export const scrollBasedMover = (sticky, items, options = {}) => {
 				currentProp && items[0].style.setProperty(`--${currentProp}`, 0);
 
 				// вызов коллбэка
-				(typeof options.onOver === 'function') && options.onOver.call(sticky);
+				options.onOver?.call(sticky);
 				position = 'over';
 	
 			// Сброс, если ниже экрана
@@ -180,7 +180,7 @@ export const scrollBasedMover = (sticky, items, options = {}) => {
 				previousProp && items[items.length - 2]?.style.setProperty(`--${previousProp}`, 100);
 
 				// вызов коллбэка
-				(typeof options.onUnder === 'function') && options.onUnder.call(sticky);
+				options.onUnder?.call(sticky);
 				position = 'under';
 			}
 		};

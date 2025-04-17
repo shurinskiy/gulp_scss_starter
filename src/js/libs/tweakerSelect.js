@@ -115,7 +115,7 @@ export const tweakerSelect = (items, props = {}) => {
 			this.items[i].classList.add(this.currentClass);
 			
 			e && this.select.dispatchEvent(new Event("change"));
-			e && (typeof this.props.select === 'function') && this.props.select.call(this.wrapper, i);
+			e && this.props.select?.call(this.wrapper, i);
 		}
 
 		#init() {

@@ -46,7 +46,7 @@ import { makeGallery } from "../../js/libs/makeGallery";
 makeGallery(document.querySelectorAll('.someblock'), { 
 	class: gallery,
 	navigation: true,
-	render: function() {
+	render() {
 		console.log(this);
 	}
 });
@@ -107,10 +107,7 @@ export const makeGallery = (items, options = {}) => {
 			this.$wrapper.append(this.$frame);
 			this.options.thumbnails && this.$wrapper.append(this.$thumbs);
 
-			if (typeof this.options.render === 'function')  {
-				return this.options.render.call(this);
-			}
-
+			this.options.render?.call(this);
 		}
 
 		clearActive() {

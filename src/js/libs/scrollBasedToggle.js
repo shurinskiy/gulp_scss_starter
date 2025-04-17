@@ -105,10 +105,10 @@ export const scrollBasedToggle = (options = {}) => {
 			
 			if (action) {
 				item.classList[action](`${this.options.class}`);
-				(typeof this.options[action] === 'function') && this.options[action].call(item);
+				this.options[action]?.call(item);
 			}
 			
-			(typeof this.options.tick === 'function') && this.options.tick.call(item, this.setProgress(box, shift));
+			this.options.tick?.call(item, this.setProgress(box, shift));
 		}
 		
 

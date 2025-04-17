@@ -11,7 +11,7 @@
 * 
 * @вызов:
 * 
-import { preloadingBar } from "../../js/libs/preloader";
+import { preloadingBar } from "../../js/libs/makePreloader";
 preloadingBar({ class: 'preloader', area: 'body' });
 * 
 */

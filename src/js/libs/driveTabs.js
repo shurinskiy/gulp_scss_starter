@@ -77,8 +77,7 @@ export const driveTabs = (props = {}) => {
 		#setActive = (i, e) => {
 			e?.preventDefault();
 
-			if (typeof this.props.onClick === 'function' && e)
-				this.props.onClick.call(this, i);
+			e && this.props.onClick?.call(this, i);
 
 			if (! this.controls[i].classList.contains(this.props.cls)) {
 				this.close();
@@ -87,13 +86,11 @@ export const driveTabs = (props = {}) => {
 				this.selects.map(set => {
 					set[i].classList.add(this.props.cls);
 
-					if (typeof this.props.onTab === 'function')
-						this.props.onTab.call(this, set, i);
+					this.props.onTab?.call(this, set, i);
 				});
 			}
 
-			if (typeof this.props.onTick === 'function')
-				this.props.onTick.call(this, i);
+			this.props.onTick?.call(this, i);
 		}
 		
 		close = () => this.controls.forEach((button, i) => {
@@ -130,8 +127,7 @@ export const driveTabs = (props = {}) => {
 				});
 			});
 
-			if (typeof this.props.onInit === 'function')
-				this.props.onInit.call(this);
+			this.props.onInit?.call(this);
 		}
 	}
 		

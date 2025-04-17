@@ -116,8 +116,7 @@ export const makeMasonry = (element, options = {}) => {
 				child.childNode.style.height = `${child.currentHeight}px`;
 			});
 
-			if (typeof this.options.layout === 'function') 
-				return this.options.layout.call(this);
+			this.options.layout?.call(this);
 		}
 
 		#throttle = (fn) => {

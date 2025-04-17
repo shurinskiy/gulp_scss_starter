@@ -9,7 +9,7 @@
  * <div class="target"></div>
  * 
  * Пример JS:
- * const move = new adaptiveLayout({
+ * const move = new driveAdaptive({
  *   type: "max", // или "min"
  *   movedClass: "moved",
  *   aliases: { md: 960, lg: 1280 }
@@ -28,7 +28,7 @@
  * Можно вызывать .init() повторно, если DOM обновился.
  */
 
-export class adaptiveLayout {
+export class driveAdaptive {
 	constructor({type = "max", movedClass = "moved", aliases = {}}) {
 		this.type = type; // Тип адаптации: 'min' или 'max'
 		this.movedClass = movedClass;

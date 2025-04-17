@@ -95,7 +95,6 @@ export const makeModal = function(props = {}) {
 			this.#init();
 		}
 
-
 		close(cb = this.props.close) {
 			this.modal.className = `${this.props.class}`;
 			this.modal.style.display = "none";
@@ -116,11 +115,10 @@ export const makeModal = function(props = {}) {
 
 			// вызов хука close у плагинов
 			this._hooks.close.forEach(close => close());
-			(typeof cb === 'function') && cb.call(this.content, this);
+			cb?.call(this.content, this);
 
 			return false;
 		}
-
 
 		open(source, cb = this.props.open) {
 			const isData = source.hasAttribute(`data-${this.props.class}`);
@@ -174,11 +172,10 @@ export const makeModal = function(props = {}) {
 		
 			// вызов хука open у плагинов
 			this._hooks.open.forEach(open => open(source));
-			if (typeof cb === 'function') cb.call(this.content, this, source);
+			cb?.call(this.content, this, source);
 		
 			return true;
 		}
-		
 
 		#underlay() {
 			if (! this.modal) {
@@ -204,7 +201,6 @@ export const makeModal = function(props = {}) {
 				this.content = content;
 			}
 		}
-
 
 		#init() {
 			this.#underlay();
@@ -241,9 +237,146 @@ export const makeModal = function(props = {}) {
 					this.close();
 			});
 			
-			(typeof this.props.init === 'function') && this.props.init.call(this, this.modal);
+			this.props.init?.call(this, this.modal);
 		}
 	}
 
 	return new Modal(props);
+}
+
+// плагин галлереи
+export const slideshow = {
+	name: 'slideshow',
+
+	init(modal, props = {}) {
+		this.props = props;
+
+		this.setupSlideshow = function(el) {
+			const rel = el.attributes.rel?.value;
+			if (!rel) return;
+
+			let counter = 0;
+			const current = modal.content.querySelector('img, video');
+
+			[...document.querySelectorAll(`[rel="${rel}"]`)].forEach(item => {
+				const data = item.dataset[modal.props.class];
+				const source = item.querySelector('img, video');
+				let child;
+
+				if (!data) {
+					child = source.cloneNode();
+				} else {
+					child = document.createElement('img');
+					child.src = data;
+				}
+
+				if (child.src !== current.src) {
+					Object.assign(child.dataset, source.dataset);
+					modal.content.appendChild(child);
+					counter++;
+				} else {
+					Object.assign(current.dataset, source.dataset);
+				}
+			});
+
+			modal.content.classList.add(`${modal.props.class}__content_${this.props.classMod}`);
+			current.classList.add(`${this.props.classActive}`);
+			
+			if (counter > 1) {
+				const navi = document.createElement('div');
+				const prev = document.createElement('button');
+				const next = document.createElement('button');
+				this.items = modal.content.querySelectorAll('img, video');
+				this.cnt = 0;
+
+				navi.className = `${modal.props.class}__navi`;
+				prev.className = `${modal.props.class}__prev`;
+				next.className = `${modal.props.class}__next`;
+
+				navi.append(prev);
+				navi.append(next);
+				modal.body.append(navi);
+				this.navi = navi;
+
+				prev.addEventListener('click', () => this.slideshowMove(-1));
+				next.addEventListener('click', () => this.slideshowMove());
+
+				modal.slideshow = true;
+			}
+		};
+
+		this.slideshowMove = function(direction = 1) {
+			this.items[this.cnt].classList.remove(this.props.classActive);
+			this.cnt += direction;
+
+			if (this.cnt < 0) this.cnt = this.items.length - 1;
+			else if (this.cnt >= this.items.length) this.cnt = 0;
+
+			this.items[this.cnt].classList.add(this.props.classActive);
+
+			modal._hooks.move.forEach(move => move());
+			modal.props.move?.call(modal.content, modal);
+		};
+
+		// Добавить новый хук в базовый класс
+		modal._hooks.move ||= [];
+		
+		// Добавить новый метод в базовый класс
+		modal.move = this.slideshowMove.bind(this);
+	},
+	
+	open(modal, el) {
+		const data = el.dataset[`${modal.props.class}`];
+		(!!data && data.startsWith('#')) || this.setupSlideshow(el);
+	},
+	
+	close(modal) {
+		delete this.cnt;
+		delete this.items;
+		delete modal.slideshow;
+		
+		this.navi?.remove();
+	}
+}
+
+// плагин кнопки для воспроизведения видео
+export const playbutton = {
+	name: 'playbutton',
+
+	init(modal) {
+		this.setPlayButton = (content, video) => {
+			let play = content.querySelector('.modal__play');
+	
+			if (!! video?.canPlayType) {
+				video.controls = true;
+				play ||= document.createElement('button');
+				play.className = 'modal__play';
+				play.addEventListener('click', (e) => video.play());
+				content.append(play);
+	
+				['pause', 'ended', 'playing'].forEach((event) => {
+					video.addEventListener(event, (e) => {
+						play.classList.toggle('playing', !(video.paused || video.ended));
+					});
+				});
+			} else {
+				content.querySelectorAll('video').forEach((video) => video.pause());
+				play?.remove();
+			}
+		}
+	},
+	
+	open(modal, el) {
+		const { content, slideshow, props } = modal;
+		const active = slideshow ? `.${props.slideshow?.classActive}` : '';
+		
+		this.setPlayButton(content, content.querySelector(`video${active}`));
+	},
+	
+	move(modal) {
+		const { content, props } = modal;
+		const active = `.${props.slideshow?.classActive}`;
+		
+		this.setPlayButton(content, content.querySelector(`video${active}`));
+	}
 }
