@@ -62,17 +62,6 @@ export const throttle = (fn, delay = 250) => {
 }, 200)); */
 
 
-
-// Полная загрузка документа
-export const documentReady = function (cb) {
-	if (document.attachEvent ? document.readyState === "complete" : document.readyState !== "loading") {
-		cb();
-	} else {
-		document.addEventListener('DOMContentLoaded', cb);
-	}
-}
-
-
 // Получить ширину прокрутки
 export const getScrollSize = function () {
 	const outer = document.createElement('div');
@@ -129,7 +118,7 @@ export const getHeight = (el) => {
 * Плавная прокрутка к заданному элементу 
 * @вызов:
 * 
-import { scrollToId } from "../../js/libs/helpers.js";
+import { scrollToId } from "../../js/libs/utils";
 scrollToId(document.querySelectorAll('a[href^="#"]'));
 * 
 */
@@ -151,7 +140,7 @@ export const scrollToId = (items) => {
 * Плавная прокрутка к верху страницы
 * @вызов:
 * 
-import { scrollToTop } from "../../js/libs/helpers.js";
+import { scrollToTop } from "../../js/libs/utils";
 scrollToTop(document.querySelector('a[href^="top"]'));
 * 
 */
@@ -170,7 +159,7 @@ export const scrollToTop = (item) => {
 * Обновление заданного массива в localStorage
 * @вызов:
 * 
-import { updateLocalStorage } from "../../js/libs/helpers";
+import { updateLocalStorage } from "../../js/libs/utils";
 updateLocalStorage('myArray', 'item1');
 updateLocalStorage('myArray', 'item1', false);
 * 
@@ -180,4 +169,68 @@ export const updateLocalStorage = (key, item, add = true) => {
 	const storage = JSON.parse(localStorage.getItem(key)) || [];
 	const updated = add ? [...new Set([...storage, item])] : storage.filter(val => val !== item);
 	localStorage.setItem(key, JSON.stringify(updated));
+};
+
+
+/* 
+* Простая валидация формы
+* @вызов:
+* 
+import { validate } from "../../js/libs/utils";
+input.classList.toggle('error', !validate(input));
+* 
+*/
+
+export const validate = (input) => {
+	if (!input || !input.dataset.rules) return false;
+
+	const rules = input.dataset.rules.split(',').map(rule => rule.trim()).filter(Boolean);
+	if (!rules.length) return false;
+
+	const value = input.value.trim();
+
+	const patterns = {
+		req: /.+/,
+		email: /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
+		phone: /^\+?\d{1,4}[-\d()\s]{5,20}$/,
+		name: /^[a-zA-Zа-яА-ЯёЁ\s-]+$/,
+		num: /^\d*$/,
+	};
+
+	for (const rule of rules) {
+		if (rule.startsWith('min:') && value.length < +rule.slice(4)) return false;
+		if (rule.startsWith('max:') && value.length > +rule.slice(4)) return false;
+		if (patterns[rule] && !patterns[rule].test(value)) return false;
+		if (!patterns[rule] && !rule.includes(':')) {
+			console.warn(`Unknown rule: ${rule}`);
+			return false;
+		}
+	}
+
+	return true;
+};
+
+
+/* 
+* Изменение высоты формы по мере ввода текста
+* @вызов:
+* 
+import { textareaResize } from "../../js/libs/utils";
+document.querySelectorAll('textarea').forEach(autoResizeTextarea);
+* 
+*/
+
+export const textareaResize = (textarea) => {
+	if (!textarea) return;
+
+	const resize = () => {
+		const style = getComputedStyle(textarea);
+		const borderOffset = parseFloat(style.borderTopWidth) + parseFloat(style.borderBottomWidth);
+
+		textarea.style.height = 'auto';
+		textarea.style.height = (textarea.scrollHeight + borderOffset) + 'px';
+	};
+
+	textarea.addEventListener('input', resize);
+	resize();
 };
