@@ -18,18 +18,16 @@
 * 
 * @вызов:
 * 
-import { deepParallax } from "../../js/lib";
+import { deepParallax } from "../../js/lib/deepParallax";
 const sticky = document.querySelector('.deep__sticky');
 const items = sticky?.querySelectorAll('.deep__item');
 
-if (sticky && items) {
-	deepParallax(sticky, items, { 
-		speed: 5,
-		fade: 0.9, 
-		deep: 1000,
-		perspective: 1500
-	});
-}
+sticky && items && deepParallax(sticky, items, { 
+	perspective: 1500,
+	deep: 1000,
+	fade: 0.9,
+	speed: 5,
+});
 * 
 * @параметры вызова:
 *
@@ -42,61 +40,73 @@ if (sticky && items) {
 */
 
 export const deepParallax = (container, items, options = {}) => {
-	const fade = options.fade || 1;
-	const speed = options.speed || 5;
-	const deep = -options.deep || -1000;
-	const perspective = options.perspective || 1500;
-	const name = container.className.split(' ')[0];
-	const _wrapper = document.createElement('div');
+	if (!container || !items?.length) return;
 
-	_wrapper.className = `${name}-wrapper`;
-	container.parentNode.append(_wrapper);
-	_wrapper.append(container);
+	const {
+		fade = 1,
+		speed = 5,
+		perspective = 1500,
+		deep = 1000,
+	} = options;
 
-	Object.assign(_wrapper.style, { position: 'relative' });
+	const depth = -Math.abs(deep);
+	const cls = container.className.split(' ')[0];
+	const wrapper = document.createElement('div');
+
+	// Обертка для sticky-блока
+	wrapper.className = `${cls}-wrapper`;
+	wrapper.style.position = 'relative';
+
+	// Стили контейнера (sticky)
 	Object.assign(container.style, {
 		perspective: `${perspective}px`,
 		transformStyle: 'preserve-3d',
 		position: 'sticky',
-		top: 0
+		top: '0',
 	});
 
-	let initDeep = () => {
-		let top = _wrapper.offsetTop;
-		let bottom = top + _wrapper.offsetHeight;
-		let max = (container.scrollHeight - window.innerHeight) * speed;
+	// Вставляем wrapper в DOM и оборачиваем container
+	container.parentNode.append(wrapper);
+	wrapper.append(container);
+
+	const init = () => {
+		const top = wrapper.offsetTop;
+		const bottom = top + wrapper.offsetHeight;
+		const maxShift = (container.scrollHeight - window.innerHeight) * speed;
 
 		items.forEach((item, i) => {
 			item.style.zIndex = items.length - i;
 
+			// Если страница ещё не проскроллена — просто разложить по глубине
 			if (top <= 0) {
-				item.style.transform = `translateZ(${deep * i}px)`;
+				item.style.transform = `translateZ(${depth * i}px)`;
 				
-			} else if (bottom >= _wrapper.scrollHeight) {
-				item.style.transform = `translateZ(${(deep * i) + max}px)`;
+			// Если скролл дошел до конца — заморозить на финальных позициях
+			} else if (bottom >= wrapper.scrollHeight) {
+				item.style.transform = `translateZ(${(depth * i) + maxShift}px)`;
 				item.style.opacity = (i > items.length - 2) ? 1 : 0;
 			}
 		});
 	};
 
-	let moveDeep = () => {
-		let top = container.offsetTop;
-		let bottom = top + container.offsetHeight;
-		let step = container.offsetTop * speed;
+	const update = () => {
+		const top = container.offsetTop;
+		const bottom = top + container.offsetHeight;
+		const step = container.offsetTop * speed;
 		
-		if (top > 0 && bottom < _wrapper.scrollHeight) {
+		if (top > 0 && bottom < wrapper.scrollHeight) {
 
 			items.forEach((item, i) => {
-				let move = (deep * i) + step;
+				const move = (depth * i) + step;
+				const isActive = move < Math.abs(depth) / fade;
 
 				item.style.transform = `translateZ(${move}px)`;
-				item.style.opacity = move < Math.abs(deep) / fade ? 1 : 0;
+				item.style.opacity = isActive ? 1 : 0;
+				item.style.pointerEvents = isActive ? 'auto' : 'none';
 			});
 		}
 	};
 
-	if (items.length) {
-		initDeep();
-		window.addEventListener('scroll', () => moveDeep(), { capture: true, passive: true });
-	}
+	init();
+	window.addEventListener('scroll', () => update());
 };
