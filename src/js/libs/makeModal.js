@@ -34,10 +34,15 @@ import Inputmask from "inputmask";
 makeModal({ 
 	select: '.somebutton', 
 	class: 'modal', 
-	modules: [ slideshow, playbutton ],
+	modules: [ slideshow, playbutton, thumbnails ],
 	slideshow: {
 		classMod: 'gallery',
 		classActive: 'active'
+	},
+	thumbnails: {
+		count: 4,
+		maxSkip: 3,
+		duration: 0.3,
 	},
 	init(underlay) {
 		underlay.setAttribute('data-scroll-lock-scrollable', '');
@@ -181,7 +186,7 @@ export const makeModal = function(props = {}) {
 			if (! this.modal) {
 				const underlay = document.createElement('div');
 				const body = document.createElement('div');
-				const close = document.createElement('span');
+				const close = document.createElement('button');
 				const content = document.createElement('div');
 				
 				underlay.className = `${this.props.class}`;
@@ -242,7 +247,7 @@ export const makeModal = function(props = {}) {
 	}
 
 	return new Modal(props);
-}
+};
 
 // плагин галлереи
 export const slideshow = {
@@ -286,8 +291,8 @@ export const slideshow = {
 				const navi = document.createElement('div');
 				const prev = document.createElement('button');
 				const next = document.createElement('button');
-				this.items = modal.content.querySelectorAll('img, video');
-				this.cnt = 0;
+				modal.slideshow = modal.content.querySelectorAll('img, video');
+				modal.cnt = 0;
 
 				navi.className = `${modal.props.class}__navi`;
 				prev.className = `${modal.props.class}__prev`;
@@ -300,23 +305,22 @@ export const slideshow = {
 
 				prev.addEventListener('click', () => this.slideshowMove(-1));
 				next.addEventListener('click', () => this.slideshowMove());
-
-				modal.slideshow = true;
 			}
 		};
 
-		this.slideshowMove = function(direction = 1) {
-			this.items[this.cnt].classList.remove(this.props.classActive);
-			this.cnt += direction;
-
-			if (this.cnt < 0) this.cnt = this.items.length - 1;
-			else if (this.cnt >= this.items.length) this.cnt = 0;
-
-			this.items[this.cnt].classList.add(this.props.classActive);
-
+		this.slideshowMove = function(value = 1, isIndex = false) {
+			const slides = modal.slideshow;
+		
+			slides[modal.cnt].classList.remove(this.props.classActive);
+			modal.cnt = isIndex
+				? (value + slides.length) % slides.length
+				: (modal.cnt + value + slides.length) % slides.length;
+			slides[modal.cnt].classList.add(this.props.classActive);
+		
 			modal._hooks.move.forEach(move => move());
 			modal.props.move?.call(modal.content, modal);
 		};
+				
 
 		// Добавить новый хук в базовый класс
 		modal._hooks.move ||= [];
@@ -331,13 +335,13 @@ export const slideshow = {
 	},
 	
 	close(modal) {
-		delete this.cnt;
-		delete this.items;
+		delete modal.cnt;
+		delete modal.slideshow;
 		delete modal.slideshow;
 		
 		this.navi?.remove();
 	}
-}
+};
 
 // плагин кнопки для воспроизведения видео
 export const playbutton = {
@@ -379,4 +383,183 @@ export const playbutton = {
 		
 		this.setPlayButton(content, content.querySelector(`video${active}`));
 	}
-}
+};
+
+// плагин миниатюр для навигации в галерее
+export const thumbnails = {
+	name: 'thumbnails',
+
+	init(modal, options = {}) {
+		this.options = {
+			count: 4, // сколько миниатюр видно одновременно
+			maxSkip: 3,
+			duration: 0.3,
+			dragThreshold: 5,
+			...options
+		};
+
+		this.isDragging = false;
+		this.modal = modal;
+		this.index = 0;
+
+		this._boundOnMove = this.onDrag.bind(this);
+		this._boundOnUp = this.onUp.bind(this);
+	},
+
+	get slideSize() {
+		return this.slideWidth + this.gap;
+	},
+
+	get offset() {
+		// на сколько нужно сдвинуть wrapper, чтобы отображалось count слайдов, начиная с нужного индекса
+		return this.index * this.slideSize;
+	},
+
+	get maxIndex() {
+		// максимально возможный индекс до которого можно прокрутить, чтобы во viewbox было ровно count слайдов
+		return Math.max(0, this.slides.length - this.options.count);
+	},
+
+	open(modal) {
+		if (!modal.slideshow) return;
+
+		// Создаем обертку для миниатюр
+		this.container = document.createElement('div');
+		this.container.className = `${modal.props.class}__thumbs`;
+
+		this.viewbox = document.createElement('div');
+		this.viewbox.className = `${modal.props.class}__thumbs-viewbox`;
+
+		this.wrapper = document.createElement('div');
+		this.wrapper.className = `${modal.props.class}__thumbs-wrapper`;
+
+		// Кнопки навигации
+		this.btnPrev = document.createElement('button');
+		this.btnPrev.className = `${modal.props.class}__thumbs-button ${modal.props.class}__thumbs-button_prev`;
+
+		this.btnNext = document.createElement('button');
+		this.btnNext.className = `${modal.props.class}__thumbs-button ${modal.props.class}__thumbs-button_next`;
+
+		// Добавляем миниатюры
+		this.slides = Array.from(modal.slideshow, (item, i) => {
+			const slide = document.createElement('span');
+
+			slide.className = `${modal.props.class}__thumbs-slide`;
+			slide.style.backgroundImage = `url('${item.poster || item.src}')`;
+			slide.addEventListener('click', () => this.isDragging || this.modal.move(i, true));
+			this.wrapper.appendChild(slide);
+
+			return slide;
+		});
+		
+		// Строим структуру
+		this.viewbox.appendChild(this.wrapper);
+		this.container.appendChild(this.btnPrev);
+		this.container.appendChild(this.viewbox);
+		this.container.appendChild(this.btnNext);
+		modal.body.appendChild(this.container);
+
+		this.setupThumbSizes();
+		this.bindEvents();
+		this.updateActiveThumb();
+
+		// Подписка на переключение слайдов
+		modal._hooks.move.push(this.updateActiveThumb.bind(this));
+	},
+
+	setupThumbSizes() {
+		const styles = getComputedStyle(this.wrapper);
+
+		this.gap = parseFloat(styles.gap) || 0;
+		this.slideWidth = (this.viewbox.clientWidth - this.gap * (this.options.count - 1)) / this.options.count;
+
+		this.slides.forEach(slide => slide.style.flex = `0 0 ${this.slideWidth}px`);
+		this.movingThumbs(this.index);
+	},
+
+	onDrag(e) {
+		// длина свайпа
+		const dx = e.clientX - this.startX;
+
+		// синхронизация положения wrapper с горизонтальным движением мыши
+		this.wrapper.style.transform = `translateX(${this.startOffset + dx}px)`;
+		Math.abs(dx) > this.options.dragThreshold && (this.isDragging = true);
+	},
+
+	onUp(e) {
+		// длина свайпа
+		const dx = e.clientX - this.startX;
+
+		window.removeEventListener('pointerup', this._boundOnUp);
+		window.removeEventListener('pointermove', this._boundOnMove);
+		window.removeEventListener('pointercancel', this._boundOnUp);
+
+		// сколько слайдов сдвинуть на основе длины свайпа, но не больше, чем разрешено (maxSkip)
+		const movedSlides = Math.min(this.options.maxSkip, Math.round(Math.abs(dx) / this.slideSize));
+
+		// смещение к актуальному индексу
+		movedSlides > 0
+			? this.movingThumbs(this.index - Math.sign(dx) * movedSlides)
+			: this.movingThumbs(this.index);
+	},
+
+	bindEvents() {
+		// Drag/swipe поддержка
+		this.wrapper.addEventListener('pointerdown', (e) => {
+			e.preventDefault();
+	
+			this.wrapper.style.transition = 'none';
+			this.isDragging = false;
+
+			this.startX = e.clientX;
+			this.startOffset = -this.index * (this.slideWidth + this.gap);
+
+			window.addEventListener('pointerup', this._boundOnUp);
+			window.addEventListener('pointermove', this._boundOnMove);
+			window.addEventListener('pointercancel', this._boundOnUp);
+		}, { passive: false });
+	
+		this.wrapper.querySelectorAll('*').forEach(el => {
+			el.addEventListener('click', (e) => this.isDragging && e.preventDefault());
+		});
+
+		// кнопка вперед
+		this.btnNext?.addEventListener('click', () => {
+			this.index < this.maxIndex && this.movingThumbs(this.index + 1);
+		});
+		
+		// кнопка назад
+		this.btnPrev?.addEventListener('click', () => {
+			this.index > 0 && this.movingThumbs(this.index - 1);
+		});
+
+		window.addEventListener('resize', () => this.setupThumbSizes());
+	},
+
+	movingThumbs(i) {
+		this.index = Math.max(0, Math.min(i, this.maxIndex));
+	  
+		this.wrapper.style.transition = `transform ${this.options.duration}s`;
+		this.wrapper.style.transform = `translateX(-${this.offset}px)`;
+	},
+
+	updateActiveThumb() {
+		if (!this.slides?.length) return;
+		this.slides.forEach(slide => slide.classList.remove('active'));
+		this.slides[this.modal.cnt].classList.add('active');
+		this.scrollToActiveThumb();
+	},
+
+	scrollToActiveThumb() {
+		// Если активный слайд вышел за пределы видимости — подстраиваем индекс
+		if (this.modal.cnt < this.index) {
+			this.movingThumbs(this.modal.cnt);
+		} else if (this.modal.cnt >= this.index + this.options.count) {
+			this.movingThumbs(this.modal.cnt - this.options.count + 1);
+		}
+	},
+
+	close(modal) {
+		this.container?.remove();
+	}
+};
