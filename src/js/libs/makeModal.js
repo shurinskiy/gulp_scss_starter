@@ -34,15 +34,10 @@ import Inputmask from "inputmask";
 makeModal({ 
 	select: '.somebutton', 
 	class: 'modal', 
-	modules: [ slideshow, playbutton, thumbnails ],
+	modules: [ slideshow, playbutton ],
 	slideshow: {
 		classMod: 'gallery',
 		classActive: 'active'
-	},
-	thumbnails: {
-		count: 4,
-		maxSkip: 3,
-		duration: 0.3,
 	},
 	init(underlay) {
 		underlay.setAttribute('data-scroll-lock-scrollable', '');
@@ -254,7 +249,12 @@ export const slideshow = {
 	name: 'slideshow',
 
 	init(modal, props = {}) {
-		this.props = props;
+		this.props = {
+			classActive: 'active',
+			classMod: 'gallery',
+			navigation: true,
+			...props
+		};
 
 		this.setupSlideshow = function(el) {
 			const rel = el.attributes.rel?.value;
@@ -288,23 +288,26 @@ export const slideshow = {
 			current.classList.add(`${this.props.classActive}`);
 			
 			if (counter > 1) {
-				const navi = document.createElement('div');
-				const prev = document.createElement('button');
-				const next = document.createElement('button');
 				modal.slideshow = modal.content.querySelectorAll('img, video');
 				modal.cnt = 0;
 
-				navi.className = `${modal.props.class}__navi`;
-				prev.className = `${modal.props.class}__prev`;
-				next.className = `${modal.props.class}__next`;
-
-				navi.append(prev);
-				navi.append(next);
-				modal.body.append(navi);
-				this.navi = navi;
-
-				prev.addEventListener('click', () => this.slideshowMove(-1));
-				next.addEventListener('click', () => this.slideshowMove());
+				if (this.props.navigation) {
+					const navi = document.createElement('div');
+					const prev = document.createElement('button');
+					const next = document.createElement('button');
+	
+					navi.className = `${modal.props.class}__slideshow-navi`;
+					prev.className = `${modal.props.class}__slideshow-prev`;
+					next.className = `${modal.props.class}__slideshow-next`;
+	
+					navi.append(prev);
+					navi.append(next);
+					modal.body.append(navi);
+					this.navi = navi;
+	
+					prev.addEventListener('click', () => this.slideshowMove(-1));
+					next.addEventListener('click', () => this.slideshowMove());
+				}
 			}
 		};
 
@@ -389,13 +392,13 @@ export const playbutton = {
 export const thumbnails = {
 	name: 'thumbnails',
 
-	init(modal, options = {}) {
-		this.options = {
+	init(modal, props = {}) {
+		this.props = {
 			count: 4, // сколько миниатюр видно одновременно
 			maxSkip: 3,
 			duration: 0.3,
 			dragThreshold: 5,
-			...options
+			...props
 		};
 
 		this.isDragging = false;
@@ -417,7 +420,7 @@ export const thumbnails = {
 
 	get maxIndex() {
 		// максимально возможный индекс до которого можно прокрутить, чтобы во viewbox было ровно count слайдов
-		return Math.max(0, this.slides.length - this.options.count);
+		return Math.max(0, this.slides.length - this.props.count);
 	},
 
 	open(modal) {
@@ -471,19 +474,21 @@ export const thumbnails = {
 		const styles = getComputedStyle(this.wrapper);
 
 		this.gap = parseFloat(styles.gap) || 0;
-		this.slideWidth = (this.viewbox.clientWidth - this.gap * (this.options.count - 1)) / this.options.count;
+		this.slideWidth = (this.viewbox.clientWidth - this.gap * (this.props.count - 1)) / this.props.count;
 
 		this.slides.forEach(slide => slide.style.flex = `0 0 ${this.slideWidth}px`);
 		this.movingThumbs(this.index);
 	},
 
 	onDrag(e) {
-		// длина свайпа
 		const dx = e.clientX - this.startX;
-
-		// синхронизация положения wrapper с горизонтальным движением мыши
-		this.wrapper.style.transform = `translateX(${this.startOffset + dx}px)`;
-		Math.abs(dx) > this.options.dragThreshold && (this.isDragging = true);
+		const total = this.slideSize * this.slides.length - this.gap;
+		const limit = total - this.viewbox.clientWidth + this.slideSize;
+	
+		const offset = Math.max(-limit, Math.min(this.startOffset + dx, this.slideSize));
+	
+		this.wrapper.style.transform = `translateX(${offset}px)`;
+		this.isDragging ||= Math.abs(dx) > this.props.dragThreshold;
 	},
 
 	onUp(e) {
@@ -495,7 +500,7 @@ export const thumbnails = {
 		window.removeEventListener('pointercancel', this._boundOnUp);
 
 		// сколько слайдов сдвинуть на основе длины свайпа, но не больше, чем разрешено (maxSkip)
-		const movedSlides = Math.min(this.options.maxSkip, Math.round(Math.abs(dx) / this.slideSize));
+		const movedSlides = Math.min(this.props.maxSkip, Math.round(Math.abs(dx) / this.slideSize));
 
 		// смещение к актуальному индексу
 		movedSlides > 0
@@ -525,12 +530,14 @@ export const thumbnails = {
 
 		// кнопка вперед
 		this.btnNext?.addEventListener('click', () => {
-			this.index < this.maxIndex && this.movingThumbs(this.index + 1);
+			// this.index < this.maxIndex && this.movingThumbs(this.index + 1);
+			(this.modal.cnt < this.slides.length - 1) && this.modal.move(this.modal.cnt + 1, true);
 		});
 		
 		// кнопка назад
 		this.btnPrev?.addEventListener('click', () => {
-			this.index > 0 && this.movingThumbs(this.index - 1);
+			// this.index > 0 && this.movingThumbs(this.index - 1);
+			this.modal.cnt > 0 && this.modal.move(this.modal.cnt - 1, true)
 		});
 
 		window.addEventListener('resize', () => this.setupThumbSizes());
@@ -539,7 +546,7 @@ export const thumbnails = {
 	movingThumbs(i) {
 		this.index = Math.max(0, Math.min(i, this.maxIndex));
 	  
-		this.wrapper.style.transition = `transform ${this.options.duration}s`;
+		this.wrapper.style.transition = `transform ${this.props.duration}s`;
 		this.wrapper.style.transform = `translateX(-${this.offset}px)`;
 	},
 
@@ -547,6 +554,10 @@ export const thumbnails = {
 		if (!this.slides?.length) return;
 		this.slides.forEach(slide => slide.classList.remove('active'));
 		this.slides[this.modal.cnt].classList.add('active');
+		
+		this.btnPrev.disabled = this.modal.cnt === 0;
+		this.btnNext.disabled = this.modal.cnt === this.slides.length - 1;
+
 		this.scrollToActiveThumb();
 	},
 
@@ -554,8 +565,8 @@ export const thumbnails = {
 		// Если активный слайд вышел за пределы видимости — подстраиваем индекс
 		if (this.modal.cnt < this.index) {
 			this.movingThumbs(this.modal.cnt);
-		} else if (this.modal.cnt >= this.index + this.options.count) {
-			this.movingThumbs(this.modal.cnt - this.options.count + 1);
+		} else if (this.modal.cnt >= this.index + this.props.count) {
+			this.movingThumbs(this.modal.cnt - this.props.count + 1);
 		}
 	},
 
