@@ -25,25 +25,24 @@
 * 
 * @вызов:
 * 
-import { makeModal } from "../../js/libs/modal";
-import { slideshow } from "../../js/libs/modal.slideshow";
-import { playbutton } from "../../js/libs/modal.playbutton";
-import scrollLock from 'scroll-lock';
+import { makeModal, slideshow, playbutton, thumbnails } from "../../js/libs/makeModal";
+import { disablePageScroll, enablePageScroll } from '@fluejs/noscroll';
 import Inputmask from "inputmask";
 
 makeModal({ 
-	select: '.somebutton', 
 	class: 'modal', 
-	modules: [ slideshow, playbutton ],
+	preserve: true,
+	classActive: 'active'
+	select: '.somebutton', 
+	modules: [ slideshow, playbutton, thumbnails ],
 	slideshow: {
-		classMod: 'gallery',
-		classActive: 'active'
+		navigation: false
 	},
 	init(underlay) {
-		underlay.setAttribute('data-scroll-lock-scrollable', '');
+
 	},
 	open(modal, button) {
-		scrollLock.disablePageScroll();
+		disablePageScroll();
 		
 		Inputmask({ 
 			"mask": "+7 (999) 999-99-99", 
@@ -55,7 +54,7 @@ makeModal({
 		}
 	},
 	close() {
-		scrollLock.enablePageScroll();
+		enablePageScroll();
 	},
 	move(modal) {
 		// работает только если подключен slideshow
@@ -82,6 +81,7 @@ export const makeModal = function(props = {}) {
 				modules: [],
 				class: 'modal',
 				preserve: false,
+				classActive: 'active',
 				...props
 			};
 
@@ -250,7 +250,6 @@ export const slideshow = {
 
 	init(modal, props = {}) {
 		this.props = {
-			classActive: 'active',
 			classMod: 'gallery',
 			navigation: true,
 			...props
@@ -285,7 +284,7 @@ export const slideshow = {
 			});
 
 			modal.content.classList.add(`${modal.props.class}__content_${this.props.classMod}`);
-			current.classList.add(`${this.props.classActive}`);
+			current.classList.add(`${modal.props.classActive}`);
 			
 			if (counter > 1) {
 				modal.slideshow = modal.content.querySelectorAll('img, video');
@@ -314,11 +313,11 @@ export const slideshow = {
 		this.slideshowMove = function(value = 1, isIndex = false) {
 			const slides = modal.slideshow;
 		
-			slides[modal.cnt].classList.remove(this.props.classActive);
+			slides[modal.cnt].classList.remove(modal.props.classActive);
 			modal.cnt = isIndex
 				? (value + slides.length) % slides.length
 				: (modal.cnt + value + slides.length) % slides.length;
-			slides[modal.cnt].classList.add(this.props.classActive);
+			slides[modal.cnt].classList.add(modal.props.classActive);
 		
 			modal._hooks.move.forEach(move => move());
 			modal.props.move?.call(modal.content, modal);
@@ -375,14 +374,14 @@ export const playbutton = {
 	
 	open(modal, el) {
 		const { content, slideshow, props } = modal;
-		const active = slideshow ? `.${props.slideshow?.classActive}` : '';
+		const active = slideshow ? `.${props.classActive}` : '';
 		
 		this.setPlayButton(content, content.querySelector(`video${active}`));
 	},
 	
 	move(modal) {
 		const { content, props } = modal;
-		const active = `.${props.slideshow?.classActive}`;
+		const active = `.${props.classActive}`;
 		
 		this.setPlayButton(content, content.querySelector(`video${active}`));
 	}
