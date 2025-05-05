@@ -36,7 +36,7 @@ makeModal({
 	select: '.somebutton', 
 	modules: [ slideshow, playbutton, thumbnails ],
 	slideshow: {
-		navigation: false
+		// navigation: false
 	},
 	init(underlay) {
 
@@ -50,7 +50,7 @@ makeModal({
 		}).mask(this.querySelectorAll('input[type="tel"]'));
 
 		if (modal.slideshow) {
-			this.addEventListener('click', (e) => modalFrame.move());
+			this.addEventListener('click', (e) => modal.move());
 		}
 	},
 	close() {
@@ -72,6 +72,30 @@ makeModal({
 <div data-modal="./images/someimage-big-3.png" rel="gallery">
 	<img src="./images/someimage-3.png" alt="" />
 </div>
+* 
+* @типичные стили для thumbnails:
+* 
+&__thumbs {
+	overflow: hidden;
+
+	&-wrapper {
+		will-change: transform;
+		touch-action: pan-y;
+		display: flex;
+		gap: 16px;
+	}
+
+	&-slide {
+		aspect-ratio: 2;
+		background-size: cover;
+
+		&.active {
+			outline: 2px solid orange;
+			outline-offset: -2px;
+		}
+	}
+}
+* 
 */
 
 export const makeModal = function(props = {}) {
@@ -250,8 +274,8 @@ export const slideshow = {
 
 	init(modal, props = {}) {
 		this.props = {
-			classMod: 'gallery',
 			navigation: true,
+			classMod: 'gallery',
 			...props
 		};
 
@@ -291,21 +315,17 @@ export const slideshow = {
 				modal.cnt = 0;
 
 				if (this.props.navigation) {
-					const navi = document.createElement('div');
-					const prev = document.createElement('button');
-					const next = document.createElement('button');
+					this.prev = document.createElement('button');
+					this.next = document.createElement('button');
 	
-					navi.className = `${modal.props.class}__slideshow-navi`;
-					prev.className = `${modal.props.class}__slideshow-prev`;
-					next.className = `${modal.props.class}__slideshow-next`;
+					this.prev.className = `${modal.props.class}__${this.props.classMod}-prev`;
+					this.next.className = `${modal.props.class}__${this.props.classMod}-next`;
 	
-					navi.append(prev);
-					navi.append(next);
-					modal.body.append(navi);
-					this.navi = navi;
+					modal.body.append(this.prev);
+					modal.body.append(this.next);
 	
-					prev.addEventListener('click', () => this.slideshowMove(-1));
-					next.addEventListener('click', () => this.slideshowMove());
+					this.prev.addEventListener('click', () => this.slideshowMove(-1));
+					this.next.addEventListener('click', () => this.slideshowMove());
 				}
 			}
 		};
@@ -322,7 +342,6 @@ export const slideshow = {
 			modal._hooks.move.forEach(move => move());
 			modal.props.move?.call(modal.content, modal);
 		};
-				
 
 		// Добавить новый хук в базовый класс
 		modal._hooks.move ||= [];
@@ -341,7 +360,8 @@ export const slideshow = {
 		delete modal.slideshow;
 		delete modal.slideshow;
 		
-		this.navi?.remove();
+		this.prev?.remove();
+		this.next?.remove();
 	}
 };
 
@@ -418,7 +438,7 @@ export const thumbnails = {
 	},
 
 	get maxIndex() {
-		// максимально возможный индекс до которого можно прокрутить, чтобы во viewbox было ровно count слайдов
+		// максимально возможный индекс до которого можно прокрутить, чтобы во контейнере было ровно count слайдов
 		return Math.max(0, this.slides.length - this.props.count);
 	},
 
@@ -429,18 +449,8 @@ export const thumbnails = {
 		this.container = document.createElement('div');
 		this.container.className = `${modal.props.class}__thumbs`;
 
-		this.viewbox = document.createElement('div');
-		this.viewbox.className = `${modal.props.class}__thumbs-viewbox`;
-
 		this.wrapper = document.createElement('div');
 		this.wrapper.className = `${modal.props.class}__thumbs-wrapper`;
-
-		// Кнопки навигации
-		this.btnPrev = document.createElement('button');
-		this.btnPrev.className = `${modal.props.class}__thumbs-button ${modal.props.class}__thumbs-button_prev`;
-
-		this.btnNext = document.createElement('button');
-		this.btnNext.className = `${modal.props.class}__thumbs-button ${modal.props.class}__thumbs-button_next`;
 
 		// Добавляем миниатюры
 		this.slides = Array.from(modal.slideshow, (item, i) => {
@@ -455,10 +465,7 @@ export const thumbnails = {
 		});
 		
 		// Строим структуру
-		this.viewbox.appendChild(this.wrapper);
-		this.container.appendChild(this.btnPrev);
-		this.container.appendChild(this.viewbox);
-		this.container.appendChild(this.btnNext);
+		this.container.appendChild(this.wrapper);
 		modal.body.appendChild(this.container);
 
 		this.setupThumbSizes();
@@ -473,7 +480,7 @@ export const thumbnails = {
 		const styles = getComputedStyle(this.wrapper);
 
 		this.gap = parseFloat(styles.gap) || 0;
-		this.slideWidth = (this.viewbox.clientWidth - this.gap * (this.props.count - 1)) / this.props.count;
+		this.slideWidth = (this.container.clientWidth - this.gap * (this.props.count - 1)) / this.props.count;
 
 		this.slides.forEach(slide => slide.style.flex = `0 0 ${this.slideWidth}px`);
 		this.movingThumbs(this.index);
@@ -482,7 +489,7 @@ export const thumbnails = {
 	onDrag(e) {
 		const dx = e.clientX - this.startX;
 		const total = this.slideSize * this.slides.length - this.gap;
-		const limit = total - this.viewbox.clientWidth + this.slideSize;
+		const limit = total - this.container.clientWidth + this.slideSize;
 	
 		const offset = Math.max(-limit, Math.min(this.startOffset + dx, this.slideSize));
 	
@@ -508,7 +515,6 @@ export const thumbnails = {
 	},
 
 	bindEvents() {
-		// Drag/swipe поддержка
 		this.wrapper.addEventListener('pointerdown', (e) => {
 			e.preventDefault();
 	
@@ -527,18 +533,6 @@ export const thumbnails = {
 			el.addEventListener('click', (e) => this.isDragging && e.preventDefault());
 		});
 
-		// кнопка вперед
-		this.btnNext?.addEventListener('click', () => {
-			// this.index < this.maxIndex && this.movingThumbs(this.index + 1);
-			(this.modal.cnt < this.slides.length - 1) && this.modal.move(this.modal.cnt + 1, true);
-		});
-		
-		// кнопка назад
-		this.btnPrev?.addEventListener('click', () => {
-			// this.index > 0 && this.movingThumbs(this.index - 1);
-			this.modal.cnt > 0 && this.modal.move(this.modal.cnt - 1, true)
-		});
-
 		window.addEventListener('resize', () => this.setupThumbSizes());
 	},
 
@@ -553,9 +547,6 @@ export const thumbnails = {
 		if (!this.slides?.length) return;
 		this.slides.forEach(slide => slide.classList.remove('active'));
 		this.slides[this.modal.cnt].classList.add('active');
-		
-		this.btnPrev.disabled = this.modal.cnt === 0;
-		this.btnNext.disabled = this.modal.cnt === this.slides.length - 1;
 
 		this.scrollToActiveThumb();
 	},
