@@ -8,10 +8,10 @@
 * 
 <div class="deep__sticky">
 	<div class="deep__items">
-		<div class="deep__item"></div>
-		<div class="deep__item"></div>
-		<div class="deep__item"></div>
-		<div class="deep__item"></div>
+		<div class="deep__item" data-depth></div>
+		<div class="deep__item" data-depth></div>
+		<div class="deep__item" data-depth></div>
+		<div class="deep__item" data-depth></div>
 	</div>
 </div>
 * 
@@ -19,11 +19,10 @@
 * @вызов:
 * 
 import { deepParallax } from "../../js/lib/deepParallax";
-const sticky = document.querySelector('.deep__sticky');
-const items = sticky?.querySelectorAll('.deep__item');
 
-sticky && items && deepParallax(sticky, items, { 
+deepParallax(document.querySelector('.deep__sticky'), { 
 	perspective: 1500,
+	name: 'depth',
 	deep: 1000,
 	fade: 0.9,
 	speed: 5,
@@ -34,24 +33,27 @@ sticky && items && deepParallax(sticky, items, {
 * sticky - блок содержащий целевые элементы.
 * items - элементы у которых будут переключаться классы.
 * perspective - глубина перспективы (от плоскости экрана)
-* speed - скорость перемещения элементов при прокрутке 
+* speed - коэффициент полноты использования доступной прокрутки
 * deep - расстояние до самого дальнего слайда (от плоскости экрана)
 * fade - момент исчезновения самого ближнего слайда (к плоскости экрана)
 */
 
-export const deepParallax = (container, items, options = {}) => {
-	if (!container || !items?.length) return;
-
+export const deepParallax = (container, options = {}) => {
+	if (! container) return;
+	
 	const {
 		fade = 1,
-		speed = 5,
-		perspective = 1500,
 		deep = 1000,
+		name = 'depth',
+		perspective = 1500,
+		speed: customSpeed,
 	} = options;
-
-	const depth = -Math.abs(deep);
+	
+	const items = container.querySelectorAll(`[data-${name}]`);
 	const cls = container.className.split(' ')[0];
 	const wrapper = document.createElement('div');
+	const total = items.length - 1;
+	let ticking = false;
 
 	// Обертка для sticky-блока
 	wrapper.className = `${cls}-wrapper`;
@@ -69,44 +71,42 @@ export const deepParallax = (container, items, options = {}) => {
 	container.parentNode.append(wrapper);
 	wrapper.append(container);
 
-	const init = () => {
-		const top = wrapper.offsetTop;
-		const bottom = top + wrapper.offsetHeight;
-		const maxShift = (container.scrollHeight - window.innerHeight) * speed;
+	const render = () => {
+		const rectOuter = wrapper.getBoundingClientRect();
+		const rectInner = container.getBoundingClientRect();
+		const maxScroll = rectOuter.height - rectInner.height;
+		const topScroll = Math.min((rectOuter.top > 0 ? 0 : -rectOuter.top), maxScroll);
+
+		const lastDepth = parseFloat(items[total]?.dataset[name]) || total;
+		const speed = customSpeed ?? ((deep * lastDepth) / maxScroll || 0);
 
 		items.forEach((item, i) => {
-			item.style.zIndex = items.length - i;
+			const itemDepth = parseFloat(item.dataset[name]) || i;
+			let moveZ = (topScroll * speed) - (deep * itemDepth);
+			const isVisible = moveZ < deep / fade;
 
-			// Если страница ещё не проскроллена — просто разложить по глубине
-			if (top <= 0) {
-				item.style.transform = `translateZ(${depth * i}px)`;
-				
-			// Если скролл дошел до конца — заморозить на финальных позициях
-			} else if (bottom >= wrapper.scrollHeight) {
-				item.style.transform = `translateZ(${(depth * i) + maxShift}px)`;
-				item.style.opacity = (i > items.length - 2) ? 1 : 0;
-			}
+			(i == total) && (moveZ = Math.min(moveZ, 0));
+
+			item.style.zIndex ||= items.length - i;
+			item.style.willChange ||= 'transform, opacity';
+			item.style.pointerEvents = isVisible ? 'auto' : 'none';
+			item.style.transform = `translateZ(${moveZ}px)`;
+			item.style.opacity = isVisible ? 1 : 0;
 		});
-	};
+	}
 
-	const update = () => {
-		const top = container.offsetTop;
-		const bottom = top + container.offsetHeight;
-		const step = container.offsetTop * speed;
-		
-		if (top > 0 && bottom < wrapper.scrollHeight) {
+	const onScroll = () => {
+		if (! ticking) {
+			ticking = true;
 
-			items.forEach((item, i) => {
-				const move = (depth * i) + step;
-				const isActive = move < Math.abs(depth) / fade;
-
-				item.style.transform = `translateZ(${move}px)`;
-				item.style.opacity = isActive ? 1 : 0;
-				item.style.pointerEvents = isActive ? 'auto' : 'none';
+			window.requestAnimationFrame(() => {
+				render();
+				ticking = false;
 			});
 		}
 	};
 
-	init();
-	window.addEventListener('scroll', () => update());
+	render();
+	window.addEventListener('scroll', onScroll, { passive: true });
+	window.addEventListener('resize', onScroll);
 };

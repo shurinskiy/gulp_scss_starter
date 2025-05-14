@@ -182,24 +182,27 @@ input.classList.toggle('error', !validate(input));
 */
 
 export const validate = (input) => {
-	if (!input || !input.dataset.rules) return false;
+	if (!input || !input.dataset.rules) return true;
 
 	const rules = input.dataset.rules.split(',').map(rule => rule.trim()).filter(Boolean);
-	if (!rules.length) return false;
+	if (!rules.length) return true;
 
 	const value = input.value.trim();
 
 	const patterns = {
 		req: /.+/,
-		email: /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
-		phone: /^\+?\d{1,4}[-\d()\s]{5,20}$/,
-		name: /^[a-zA-Zа-яА-ЯёЁ\s-]+$/,
+		omit: /^$/,
 		num: /^\d*$/,
+		name: /^[a-zA-Zа-яА-ЯёЁ\s-]+$/,
+		phone: /^\+?\d{1,4}[-\d()\s]{5,20}$/,
+		email: /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
+		url: /^(https?:\/\/)?([\w-]+\.)+[\w-]+(\/[\w-./?%&=]*)?$/i,
 	};
 
 	for (const rule of rules) {
 		if (rule.startsWith('min:') && value.length < +rule.slice(4)) return false;
 		if (rule.startsWith('max:') && value.length > +rule.slice(4)) return false;
+		if (rule.startsWith('num:') && (isNaN(+value) || +value > +rule.slice(4))) return false;
 		if (patterns[rule] && !patterns[rule].test(value)) return false;
 		if (!patterns[rule] && !rule.includes(':')) {
 			console.warn(`Unknown rule: ${rule}`);

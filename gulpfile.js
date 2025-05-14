@@ -1,4 +1,5 @@
 const gulp = require('gulp');
+const merge2 = require('merge2');
 const sass = require('gulp-sass')(require('sass'));
 const $ = require('gulp-load-plugins')({ pattern: ['*', '!sass'] });
 const isRemote = process.argv.indexOf('--remote') !== -1;
@@ -43,7 +44,8 @@ let pth = {
 		css: './src/scss/style.scss',
 		scss: './src/scss/lib/',
 		// img: './src/images/**/!(icon-*.svg|shape-*.svg)',
-		img: './src/images/!(icons){,/**}',
+		img: './src/images/!(icons|static){,/**}',
+		static: './src/images/static/**/*',
 		icn: './src/images/icons/**/*.svg',
 		fnts: './src/fonts/**/*.*',
 		tmpl: './src/templates/'
@@ -53,6 +55,7 @@ let pth = {
 		js: ['./src/js/**/*.js','./src/blocks/**/(*.js|*.json)'],
 		css: ['./src/scss/**/*.scss','./src/blocks/**/*.scss'],
 		img: ['./src/images/**', '!./src/images/icons/**'],
+		static: './src/images/static/**/*',
 		icn: './src/images/icons/**/*.svg',
 		fnts: './src/fonts/**/*.*'
 	}
@@ -131,10 +134,16 @@ function styles() {
 }
 
 function images() {
-	return gulp.src(pth.src.img)
+	const processed = gulp.src(pth.src.img)
 		.pipe($.newer(pth.pbl.img))
 		.pipe($.webp())
-		.pipe(gulp.dest(pth.pbl.img))
+		.pipe(gulp.dest(pth.pbl.img));
+
+	const copied = gulp.src(pth.src.static)
+		.pipe($.newer(pth.src.static))
+		.pipe(gulp.dest(pth.pbl.img));
+
+	return merge2(processed, copied)
 		.pipe($.if(isSync, $.browserSync.stream()));
 }
 
