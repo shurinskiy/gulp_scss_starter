@@ -42,6 +42,7 @@ export const deepParallax = (container, options = {}) => {
 	if (! container) return;
 	
 	const {
+		lag = 0,
 		fade = 1,
 		deep = 1000,
 		name = 'depth',
@@ -74,11 +75,9 @@ export const deepParallax = (container, options = {}) => {
 	const render = () => {
 		const rectOuter = wrapper.getBoundingClientRect();
 		const rectInner = container.getBoundingClientRect();
-		const maxScroll = rectOuter.height - rectInner.height;
-		const topScroll = Math.min((rectOuter.top > 0 ? 0 : -rectOuter.top), maxScroll);
-
-		const lastDepth = parseFloat(items[total]?.dataset[name]) || total;
-		const speed = customSpeed ?? ((deep * lastDepth) / maxScroll || 0);
+		const maxScroll = rectOuter.height - rectInner.height - lag * 2;
+		const topScroll = Math.max(0, Math.min(-rectOuter.top - lag, maxScroll));
+		const speed = customSpeed ?? (deep * total / maxScroll);
 
 		items.forEach((item, i) => {
 			const itemDepth = parseFloat(item.dataset[name]) || i;
