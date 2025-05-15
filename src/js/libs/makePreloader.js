@@ -11,11 +11,15 @@
 * 
 * @вызов:
 * 
+import { disablePageScroll, enablePageScroll } from '@fluejs/noscroll';
 import { preloadingBar } from "../../js/libs/makePreloader";
+
 preloadingBar({
 	includeVideo: true,
 	cls: 'preloader',
-	area: 'body'
+	area: 'body',
+	onStart: disablePageScroll,
+	onDone: enablePageScroll
 });
 * 
 * @типичные стили:
@@ -71,7 +75,7 @@ export const preloadingBar = (options = {}) => {
 	const wrapper = document.querySelector(`.${cls}`);
 
 	let media = [];
-	let ctr = 0;
+	let loaded = 0;
 
 	if (!wrapper) return;
 
@@ -111,14 +115,14 @@ export const preloadingBar = (options = {}) => {
 
 	// Обновление прогресса
 	const updateProgress = () => {
-		const percent = Math.round((++ctr / media.length) * 100);
+		const percent = Math.round((++loaded / media.length) * 100);
 
 		if (progress) {
 			progress.style.setProperty('--progress', percent);
 			progress.dataset.count = percent;
 		}
 
-		(ctr === media.length) && loadDone();
+		(loaded === media.length) && loadDone();
 	};
 
 	// Завершение прелоадера
@@ -126,20 +130,24 @@ export const preloadingBar = (options = {}) => {
 		setTimeout(() => {
 			wrapper.classList.add(`${cls}_done`);
 			const transitionDuration = parseFloat(getComputedStyle(wrapper).transitionDuration) || 1.2;
-	
+			
 			setTimeout(() => {
 				wrapper.remove();
 			}, transitionDuration * 1000);
+
+			options.onDone?.call();
 		}, doneDelay);
 	};
 
 	// Инициализация загрузки медиа
 	const init = () => {
+		options.onStart?.call(wrapper);
 		getMedia();
+
 		! media.length && loadDone();
 
 		media.forEach((src) => {
-			if (includeVideo && (src.endsWith('.mp4') || src.endsWith('.webm') || src.endsWith('.ogg'))) {
+			if (includeVideo && /\.(mp4|webm|ogg)$/.test(src)) {
 				const video = document.createElement('video');
 				video.onloadeddata = updateProgress;
 				video.onerror = updateProgress;
@@ -160,7 +168,7 @@ export const preloadingBar = (options = {}) => {
 
 		// Добавляем подстраховку на window.load, если что-то не догрузилось
 		window.addEventListener('load', () => {
-			(ctr < media.length) && (ctr = media.length) && loadDone();
+			(loaded < media.length) && (loaded = media.length) && loadDone();
 		});
 	};
 	
