@@ -2,6 +2,7 @@ const driveSlide = {
 
 	up(el, { duration = 500, opacity = false, callback } = {}) {
 		if (el.timeout || window.getComputedStyle(el).display === 'none') return;
+		el.style.display = 'block';
 				
 		Object.assign(el.style, {
 			transitionProperty: 'height, margin, padding, opacity',
@@ -12,6 +13,7 @@ const driveSlide = {
 		});
 
 		requestAnimationFrame(() => {
+			el.offsetHeight;
 			Object.assign(el.style, {
 				overflow: 'hidden',
 				paddingBottom: 0,
@@ -60,6 +62,7 @@ const driveSlide = {
 		});
 		
 		requestAnimationFrame(() => {
+			el.offsetHeight;
 			Object.assign(el.style, {
 				transitionDuration: duration + 'ms',
 				opacity: 1,
@@ -96,17 +99,15 @@ const driveSlide = {
 	
 		const slide = this;
 		
-		events.split(' ').forEach(event => {
+		events.split(/\s+/).forEach(event => {
 			items.forEach(item => {
 				const content = item.nextElementSibling;
 				const parent = item.parentNode;
 				
-				content.style.display = 'none';
-				parent.classList.contains(cls) && (content.style.display = 'block');
-
 				item.addEventListener(event, function(e) {
 					e.stopPropagation();
-	
+					if (options.lock) return;
+
 					items.forEach(other => {
 						if (other != this) {
 							slide.up(other.nextElementSibling, { duration });
@@ -115,17 +116,21 @@ const driveSlide = {
 					});
 	
 					if (toggle) {
-						slide[parent.classList.toggle(cls) ? 'down' : 'up'](content, { duration });
+						parent.classList.toggle(cls, slide.toggle(content, { duration }));
 					} else {
-						parent.classList.add(cls);
 						slide.down(content, { duration });
+						parent.classList.add(cls);
 					}
+
+					options.lock = window.setTimeout(() => {
+						delete options.lock;
+					}, duration);
 				});
 			});
 		});
 	},
 
-	
+
 	accordionSimple(items, options = {}) {
 		const {
 			events = 'click',
