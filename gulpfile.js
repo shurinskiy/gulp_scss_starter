@@ -70,6 +70,14 @@ function clear() {
 	return $.del(pth.pbl.root + '*');
 }
 
+function root() {
+	return gulp.src([
+		'./src/*',
+		'!./src/*.html',
+	], { dot: true, nodir: true })
+	.pipe(gulp.dest(pth.pbl.root));
+}
+
 function js() {
 	return gulp.src(pth.src.js)
 		.pipe($.webpackStream(webconf))
@@ -228,7 +236,7 @@ function watch() {
 	gulp.watch(pth.wtch.fnts, fonts);
 }
 
-const build = gulp.series(clear, gulp.parallel(html, js, jslib, styles, images, icons, fonts));
+const build = gulp.series(clear, gulp.parallel(root, html, js, jslib, styles, images, icons, fonts));
 
 exports.build = build;
 exports.watch = gulp.series(build, watch);

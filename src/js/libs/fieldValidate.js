@@ -45,6 +45,7 @@ import { fieldValidate } from "../../js/libs/fieldValidate";
 
 const messages = {
 	ru: {
+		omit: 'Это поле должно быть пустым',
 		req: 'Поле обязательно для заполнения',
 		email: 'Введите корректный email',
 		phone: 'Введите корректный номер телефона',
@@ -59,6 +60,7 @@ const messages = {
 		unknown: (rule) => `Ошибка валидации: ${rule}`,
 	},
 	en: {
+		omit: 'This field must be left blank',
 		req: 'This field is required',
 		email: 'Enter a valid email address',
 		phone: 'Enter a valid phone number',
@@ -86,6 +88,7 @@ export const fieldValidate = (input, lang = 'ru') => {
 	const patterns = {
 		req: /.+/,
 		num: /^\d*$/,
+		omit: /^$/,
 		name: /^[a-zA-Zа-яА-ЯёЁ\s-]+$/,
 		phone: /^\+?\d{1,4}[-\d()\s]{5,20}$/,
 		email: /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,

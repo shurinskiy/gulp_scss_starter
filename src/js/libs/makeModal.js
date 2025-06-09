@@ -13,7 +13,7 @@
 * если значение есть, но НЕ начинается с "#" - создает элемент img, в src указывает значение data-modal
 * 
 * <a href="./" data-modal="./images/somepicture.png" rel="gallery"></a>: 
-* если значение есть, но НЕ начинается с "#", а так же имеет не пустой атрибут "rel" - создает элемент img, 
+* если значение есть, но НЕ начинается с "#", а так-же имеет не пустой атрибут "rel" - создает элемент img, 
 * в src указывает значение data-modal и создает галерею, из всех найденных, с таким же "rel"
 * 
 * <a href="./" data-modal rel="gallery"><img src="./images/somepicture.png" alt="" /></a>:
@@ -21,7 +21,7 @@
 * 
 * 
 * @элемент для прослушивания:
-* <span class="somebutton" data-modal="someblock"></span>
+* <span class="somebutton" data-modal="#someblock"></span>
 * 
 * @вызов:
 * 
@@ -119,32 +119,10 @@ export const makeModal = function(props = {}) {
 			this.#init();
 		}
 
-		close(cb = this.props.close) {
-			this.modal.className = `${this.props.class}`;
-			this.modal.style.display = "none";
-			
-			this.content.className = `${this.props.class}__content`;
-			this.content.innerHTML = '';
-
-			if (this.props.preserve && this.detached) {
-				const { node, parent, next } = this.detached;
-
-				if (next && next.parentNode === parent) {
-					parent.insertBefore(node, next);
-				} else {
-					parent.appendChild(node);
-				}
-				this.detached = null;
-			}
-
-			// вызов хука close у плагинов
-			this._hooks.close.forEach(close => close());
-			cb?.call(this.content, this);
-
-			return false;
-		}
-
 		open(source, cb = this.props.open) {
+			if (! source) return;
+			this.props.preserve && this.restore();
+
 			const isData = source.hasAttribute(`data-${this.props.class}`);
 			const data = source.dataset[this.props.class];
 			let content = null;
@@ -152,15 +130,19 @@ export const makeModal = function(props = {}) {
 			
 			if (source instanceof HTMLElement && !isData) {
 				// Прямо переданный целевой блок
-				content = source;
 				mod = 'custom';
 				
 				if (this.props.preserve) {
+					content = source;
+
 					this.detached = { 
 						node: content, 
 						parent: content.parentNode, 
 						next: content.nextSibling 
 					};
+					
+				} else {
+					content = source.cloneNode(true);
 				}
 				
 			} else {
@@ -189,9 +171,10 @@ export const makeModal = function(props = {}) {
 			this.modal.className = this.props.class;
 			this.modal.classList.add(`${this.props.class}_${mod}`);
 			this.modal.style.display = "block";
-		
+			
 			this.content.innerHTML = '';
 			this.content.className = `${this.props.class}__content`;
+			
 			this.content['insertAdjacent' + (typeof content === 'string' ? 'HTML' : 'Element')]('beforeend', content ?? '');
 		
 			// вызов хука open у плагинов
@@ -199,6 +182,46 @@ export const makeModal = function(props = {}) {
 			cb?.call(this.content, this, source);
 		
 			return true;
+		}
+
+		close(cb = this.props.close) {
+			this.modal.className = `${this.props.class}`;
+			this.modal.style.display = "none";
+			this.buttons(false);
+			
+			this.content.className = `${this.props.class}__content`;
+			this.content.innerHTML = '';
+			this.props.preserve && this.restore();
+
+			// вызов хука close у плагинов
+			this._hooks.close.forEach(close => close());
+			cb?.call(this.content, this);
+
+			return false;
+		}
+
+		restore() {
+			if (! this.detached) return;
+			const { node, parent, next } = this.detached;
+
+			(next?.parentNode === parent ? parent.insertBefore : parent.appendChild).call(parent, node, next);
+			this.detached = null;
+		}
+
+		buttons(build = true) {
+			if (build) {
+				this.prev = document.createElement('button');
+				this.next = document.createElement('button');
+
+				this.prev.className = `${this.props.class}__button ${this.props.class}__button_prev`;
+				this.next.className = `${this.props.class}__button ${this.props.class}__button_next`;
+
+				this.body.append(this.prev);
+				this.body.append(this.next);
+			} else {
+				this.prev?.remove();
+				this.next?.remove();
+			}
 		}
 
 		#underlay() {
@@ -279,32 +302,31 @@ export const slideshow = {
 			...props
 		};
 
-		this.setupSlideshow = function(el) {
+		this.setupSlideshow = function(modal, el) {
 			const rel = el.attributes.rel?.value;
 			if (!rel) return;
 
-			let counter = 0;
 			const current = modal.content.querySelector('img, video');
+			let append = false;
+			let counter = 0;
 
-			[...document.querySelectorAll(`[rel="${rel}"]`)].forEach(item => {
-				const data = item.dataset[modal.props.class];
+			[...document.querySelectorAll(`[rel="${rel}"]`)].forEach((item, i) => {
 				const source = item.querySelector('img, video');
-				let child;
+				const data = item.dataset[modal.props.class];
+				
+				const child = data 
+					? Object.assign(document.createElement('img'), { src: data })
+					: source.cloneNode();
 
-				if (!data) {
-					child = source.cloneNode();
-				} else {
-					child = document.createElement('img');
-					child.src = data;
-				}
-
-				if (child.src !== current.src) {
-					Object.assign(child.dataset, source.dataset);
-					modal.content.appendChild(child);
-					counter++;
-				} else {
+				if (child.src === current.src) {
 					Object.assign(current.dataset, source.dataset);
+					append = true;
+					return;
 				}
+
+				modal.content[append ? 'appendChild' : 'insertBefore'](child, append ? null : current);		
+				Object.assign(child.dataset, source.dataset);
+				counter++;		
 			});
 
 			modal.content.classList.add(`${modal.props.class}__content_${this.props.classMod}`);
@@ -312,20 +334,12 @@ export const slideshow = {
 			
 			if (counter > 1) {
 				modal.slideshow = modal.content.querySelectorAll('img, video');
-				modal.cnt = 0;
+				modal.cnt = [...modal.slideshow].findIndex(item => item.classList.contains(modal.props.classActive));
 
 				if (this.props.navigation) {
-					this.prev = document.createElement('button');
-					this.next = document.createElement('button');
-	
-					this.prev.className = `${modal.props.class}__${this.props.classMod}-prev`;
-					this.next.className = `${modal.props.class}__${this.props.classMod}-next`;
-	
-					modal.body.append(this.prev);
-					modal.body.append(this.next);
-	
-					this.prev.addEventListener('click', () => this.slideshowMove(-1));
-					this.next.addEventListener('click', () => this.slideshowMove());
+					modal.buttons();
+					modal.prev.addEventListener('click', () => this.slideshowMove(-1));
+					modal.next.addEventListener('click', () => this.slideshowMove());
 				}
 			}
 		};
@@ -352,16 +366,13 @@ export const slideshow = {
 	
 	open(modal, el) {
 		const data = el.dataset[`${modal.props.class}`];
-		(!!data && data.startsWith('#')) || this.setupSlideshow(el);
+		(!!data && data.startsWith('#')) || this.setupSlideshow(modal, el);
 	},
 	
 	close(modal) {
 		delete modal.cnt;
 		delete modal.slideshow;
 		delete modal.slideshow;
-		
-		this.prev?.remove();
-		this.next?.remove();
 	}
 };
 
