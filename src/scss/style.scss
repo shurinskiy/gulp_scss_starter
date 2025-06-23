@@ -61,9 +61,13 @@ body, html {
 }
 
 p { margin-bottom: 10px; }
-strong { font-weight: bold; }
 em { font-style: italic; }
+strong { font-weight: bold; }
 
+@keyframes fadeIn {
+	from { opacity: 0; }
+	to { opacity: 1; }
+}
 
 .mb1 { margin-bottom: 100px; }
 .mb2 { margin-bottom: 80px; }

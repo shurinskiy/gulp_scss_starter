@@ -95,37 +95,49 @@ export const tweakerRangeDouble = (item, options = {}) => {
 			this.$wrapper.append(this.$top, this.$slider);
 		}
 
+		#clampPrices(min, max, current = 'min') {
+			const { gap, maxPrice } = this.options;
+
+			min = Math.min(Math.max(0, min), maxPrice);
+			max = Math.min(Math.max(0, max), maxPrice);
+
+			if (max - min < gap) {
+				if (current === 'min') {
+					max = Math.min(maxPrice, min + gap);
+					min = max - gap;
+				} else {
+					min = Math.max(0, max - gap);
+					max = min + gap;
+				}
+			}
+
+			return [min, max];
+		}
+
+		#updateValues(min, max) {
+			this.$prices[0].value = min;
+			this.$prices[1].value = max;
+			this.$controls[0].value = min;
+			this.$controls[1].value = max;
+
+			this.$progress.style.left = (min / this.options.maxPrice * 100) + "%";
+			this.$progress.style.right = (100 - max / this.options.maxPrice * 100) + "%";
+		}
+
 		setControls(e) {
+			const current = e?.currentTarget === this.$controls[0] ? 'min' : 'max';
 			let min = +this.$controls[0].value;
 			let max = +this.$controls[1].value;
-	
-			if ((max - min) < this.options.gap) {
-				if (e?.currentTarget === this.$controls[0]) {
-					this.$controls[0].value = max - this.options.gap;
-				} else {
-					this.$controls[1].value = min + this.options.gap;
-				}
-			} else {
-				this.$prices[0].value = min;
-				this.$prices[1].value = max;
-				this.$progress.style.left = ((min / this.options.maxPrice) * 100) + "%";
-				this.$progress.style.right = 100 - (max / this.options.maxPrice) * 100 + "%";
-			}
+
+			this.#updateValues(...this.#clampPrices(min, max, current));
 		}
 
 		setPrices(e) {
+			const current = e?.currentTarget === this.$prices[0] ? 'min' : 'max';
 			let min = +this.$prices[0].value;
 			let max = +this.$prices[1].value;
-			
-			if ((max - min >= this.options.gap) && max <= this.$controls[1].max) {
-				if (e?.currentTarget === this.$prices[0]) {
-					this.$controls[0].value = min;
-					this.$progress.style.left = ((min / this.options.maxPrice) * 100) + "%";
-				} else {
-					this.$controls[1].value = max;
-					this.$progress.style.right = 100 - (max / this.options.maxPrice) * 100 + "%";
-				}
-			}
+
+			this.#updateValues(...this.#clampPrices(min, max, current));
 		}
 
 		init() {
@@ -135,6 +147,7 @@ export const tweakerRangeDouble = (item, options = {}) => {
 		
 			this.options.input && this.$prices.forEach(price => {
 				price.addEventListener("input", this.setPrices.bind(this));
+				price.addEventListener("change", this.setPrices.bind(this));
 			});
 			
 			this.setControls();

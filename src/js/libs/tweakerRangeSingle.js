@@ -7,56 +7,62 @@ export const tweakerRangeSingle = (item, options = {}) => {
 			this.options = {
 				class: 'range',
 				min: item.min || 0,
-				max: item.max || 1000,
-				current: item.value || 100,
+				max: item.max || 100,
+				current: item.value || 50,
 				...options
 			};
 
 			this.$range = item;
-			this.$wrapper = document.createElement('div');
-			this.$value = document.createElement('input');
+			this.$outer = document.createElement('div');
 			this.$progress = document.createElement('span');
+			this.$wrapperRange = document.createElement('div');
+			this.$wrapperNumber = document.createElement('div');
+			this.$number = document.createElement('input');
 			
-			this.render();
-			this.progress();
+			this.#render();
+			this.#progress();
 			this.init();
 		}
 
-		render() {
+		#render() {
 			if (this.$range.type !== 'range') return;
-			const previous = this.$range.previousElementSibling;
 			
-			this.$wrapper.className = `${this.$range.className} ${this.options.class}`;
-			Object.assign(this.$wrapper.dataset, this.$range.dataset);
+			this.$outer.className = `${this.$range.className} ${this.options.class}`;
+			Object.assign(this.$outer.dataset, this.$range.dataset);
 
 			Object.keys(this.$range.dataset).forEach(dataKey => {
 				delete this.$range.dataset[dataKey];
 			});
 
 			this.$range.removeAttribute('class');
-			this.$value.type = 'number';
-			this.$value.value = this.options.current;
+			this.$number.type = 'number';
+			this.$number.value = this.options.current;
+			this.$range.parentNode.insertBefore(this.$outer, this.$range.nextSibling || null);
 
-			(previous) ? previous.after(this.$wrapper) : select.parentNode.prepend(this.$wrapper);
-			this.$wrapper.append(this.$value, this.$range, this.$progress);
+			this.$wrapperNumber.className = `${this.options.class}__value`;
+			this.$wrapperRange.className = `${this.options.class}__slider`;
+
+			this.$wrapperNumber.append(this.$number);
+			this.$wrapperRange.append(this.$range, this.$progress);
+			this.$outer.append(this.$wrapperNumber, this.$wrapperRange);
 		}
 
-		progress() {
+		#progress() {
 			const val = Math.min(this.$range.value, this.options.max);
 			const offset = ((val - this.options.min) / (this.options.max - this.options.min) * 100).toFixed(2);
-			this.$progress.style.setProperty("width", `${offset}%`);
+			this.$outer.style.setProperty("--progress", `${offset}`);
 		}
 		
 		init() {
 			this.$range.addEventListener('input', (e) => {
-				this.$value.value = Math.min(+e?.currentTarget.value, this.options.max);
-				this.progress.call(this);
+				this.$number.value = Math.min(+e?.currentTarget.value, this.options.max);
+				this.#progress.call(this);
 			});
 
-			this.$value.addEventListener('input', (e) => {
+			this.$number.addEventListener('input', (e) => {
 				const value = Math.min(Math.max(this.options.min, +e?.currentTarget.value), this.options.max);
-				this.$range.value = this.$value.value = value;
-				this.progress.call(this);
+				this.$range.value = this.$number.value = value;
+				this.#progress.call(this);
 			});
 		}
 	}

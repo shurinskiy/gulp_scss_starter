@@ -121,7 +121,17 @@ export const tweakerSelect = (items, props = {}) => {
 		#init() {
 			this.#render();
 
-			this.head.addEventListener('click', () => this.wrapper.classList.toggle(`${this.props.name}_opened`));
+			this.head.addEventListener('click', () => {
+				const open = `${this.props.name}_opened`;
+				const flip = `${this.props.name}_flipped`;
+
+				this.wrapper.classList.toggle(open);
+				this.wrapper.classList.contains(open)
+					? requestAnimationFrame(() => 
+						this.wrapper.classList.toggle(flip, this.body.getBoundingClientRect().bottom > window.innerHeight)
+					) : this.wrapper.classList.remove(flip);
+			});
+
 			this.options.forEach((option, i) => option.addEventListener('click', () => this.#update(i)));
 			this.items.forEach((item, i) => item.addEventListener('click', e => this.#update(i, e)));
 				
